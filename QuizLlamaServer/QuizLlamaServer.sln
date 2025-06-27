@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuizLlamaServer", "QuizLlamaServer\QuizLlamaServer.csproj", "{261C05E2-B2F5-4BDB-9031-E2C2A9BA3ED5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{261C05E2-B2F5-4BDB-9031-E2C2A9BA3ED5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{261C05E2-B2F5-4BDB-9031-E2C2A9BA3ED5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{261C05E2-B2F5-4BDB-9031-E2C2A9BA3ED5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{261C05E2-B2F5-4BDB-9031-E2C2A9BA3ED5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

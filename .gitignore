@@ -1,0 +1,142 @@
+# Rider and JetBrains IDEs
+.idea/
+*.sln.iml
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Uncomment if using ASP.NET Core with client app (e.g. Angular/React)
+#ClientApp/build/
+#ClientApp/node_modules/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUNIT
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# Resharper files
+*.DotSettings.user
+
+# Rider-specific
+.idea/
+*.sln.iml
+
+# DotCover
+*.dotCover
+
+# Azure Pipelines
+.azure-pipelines/
+
+# Local History (JetBrains IDEs)
+.localhistory/
+
+# VS Code
+.vscode/
+
+# Others
+*.dbmdl
+*.bak
+*.backup
+*.swp
+*.tmp
+*.temp
+*.psess
+*.vsp
+*.vspx
+*.vspscc
+*.vssscc
+*.cache
+*.pdb
+
+# Paket dependency manager
+.paket/
+paket-files/
+
+# NuGet
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Static Analysis Results
+*.sarif
+
+# Rider DotMemory
+*.dmw
+
+# Rider DotTrace
+*.dtp
+
+# Rider DotPeek
+*.dpk
+
+# Files built by Visual Studio
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
