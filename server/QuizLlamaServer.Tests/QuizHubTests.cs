@@ -27,7 +27,7 @@ public class QuizHubTests
         var options = new[] { "3", "4", "5", "6" };
 
         // Act
-        await hub.SendQuestion(question, options);
+        await hub.NextQuestion(question, options);
 
         // Assert
         mockClientProxy.Verify(

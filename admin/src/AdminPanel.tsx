@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import * as signalR from '@microsoft/signalr';
+import {HubConnection} from '@microsoft/signalr';
 import QuestionDisplay from './QuestionDisplay';
 import Leaderboard from './Leaderboard';
+import { QuestionType } from './QuestionType';
 
 interface AdminPanelProps {
-    connection: HubConnection;
+    connection: signalR.HubConnection;
 }
 
 const questions = ["what is dog"];
@@ -19,7 +21,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ connection }) => {
         setShowLeaderboard(false);
         setCurrent((prev) => prev + 1);
         try {
-            await connection.invoke('SendQuestion', "question?", ["1one","2two","3three"]);
+            console.log('NextQuestion');
+            await connection.invoke('NextQuestion');
         } catch (err) {
             console.error('SignalR error:', err);
         }

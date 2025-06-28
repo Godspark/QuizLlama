@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
+import QuizUI from './QuizUI'
+import { QuestionType } from './Questions/QuestionType'
 import './App.css'
 
 function App() {
     const [connection, setConnection] = useState<HubConnection | null>(null)
     const [question, setQuestion] = useState<string>('Waiting for question...')
     const [options, setOptions] = useState<string[]>([])
+    const [type, setType] = useState<QuestionType | null>(null)
 
     useEffect(() => {
         const newConnection = new HubConnectionBuilder()
@@ -26,9 +29,10 @@ function App() {
                 .then(() => {
                     console.log('Connected to Quiz Hub!')
 
-                    connection.on('ReceiveQuestion', (question: string, options: string[]) => {
+                    connection.on('ReceiveQuestion', (question: Question) => {
                         setQuestion(question)
                         setOptions(options)
+                        setType(type)
                     })
                 })
                 .catch(err => console.error('Error connecting to Quiz Hub:', err))
@@ -37,28 +41,24 @@ function App() {
 
     const handleAnswerSelect = (answer: string) => {
         console.log('Selected answer:', answer)
-        // TODO: Implement sending answer back to server
+        try {
+            if (!connection) {
+                console.error('Connection is not established.');
+                return;
+            }
+            connection.invoke('SubmitAnswer', "player", answer);
+        } catch (err) {
+            console.error('SignalR error:', err);
+        }
     }
 
-    
     return (
-        <div className="quiz-container">
-            <h1>Quiz Llama</h1>
-            <div className="question-container">
-                <h2>{question}</h2>
-                <div className="options-container">
-                    {options.map((option, index) => (
-                        <button
-                            key={index}
-                            className="option-button"
-                            onClick={() => handleAnswerSelect(option)}
-                        >
-                            {option}
-                        </button>
-                    ))}
-                </div>
-            </div>
-        </div>
+        <QuizUI
+            question={question}
+            options={options}
+            type={type}
+            onAnswerSelect={handleAnswerSelect}
+        />
     )
 }
 
