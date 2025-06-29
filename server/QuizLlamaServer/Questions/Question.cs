@@ -1,3 +1,5 @@
+using System.Runtime.Serialization;
+
 namespace QuizLlamaServer.Questions;
 
 public abstract class Question

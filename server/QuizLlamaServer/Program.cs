@@ -1,3 +1,4 @@
+using Microsoft.OpenApi.Models;
 using QuizLlamaServer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,12 +17,34 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSignalR();
 
+// Add Swagger services
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.UseAllOfForInheritance();
+    c.UseOneOfForPolymorphism();
+    c.SelectSubTypesUsing(baseType =>
+        typeof(Program).Assembly.GetTypes().Where(type => type.IsSubclassOf(baseType))
+    );
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "QuizLlama API", Version = "v1" });
+});
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// Enable Swagger middleware
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "QuizLlama API v1");
+    });
+}
 
 app.UseCors();
 
@@ -32,25 +55,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
 
 // Add endpoint for SignalR hub
 app.MapHub<QuizHub>("/quizhub");
