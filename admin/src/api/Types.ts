@@ -10,11 +10,10 @@
  * ---------------------------------------------------------------
  */
 
-/** @format int32 */
 export enum QuestionType {
-  Value1 = 1,
-  Value2 = 2,
-  Value3 = 3,
+  MultipleChoice = "MultipleChoice",
+  TrueFalse = "TrueFalse",
+  TypeAnswer = "TypeAnswer",
 }
 
 export interface MultipleChoiceAlternative {

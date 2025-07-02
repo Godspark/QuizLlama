@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import * as signalR from '@microsoft/signalr';
-import { HubConnection } from '@microsoft/signalr';
 import QuestionDisplay from './QuestionDisplay';
 import Leaderboard from './Leaderboard';
 
 interface AdminPanelProps {
     connection: signalR.HubConnection;
+    playersAnswered: number;
 }
 
 const questions = ["what is dog"];
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ connection }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ connection, playersAnswered }) => {
     const [current, setCurrent] = useState(0);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
 
@@ -30,6 +30,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ connection }) => {
     return (
         <div>
             <h2>Admin Panel</h2>
+            <h3>Players answered: {playersAnswered}</h3>
             {!showLeaderboard ? (
                 <QuestionDisplay question={questions[current]} />
             ) : (

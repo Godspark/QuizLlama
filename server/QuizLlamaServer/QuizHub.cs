@@ -45,6 +45,7 @@ public class QuizHub: Hub
         _logger.LogInformation("Player {PlayerName} submitted answer: {answer}", playerName, answer);
         // You would process/store the answer on the server here
         await Clients.Caller.SendAsync("AnswerReceived"); // Acknowledge
+        await Clients.All.SendAsync("PlayerAnswered");
         // Optionally: update host or all players
     }
 

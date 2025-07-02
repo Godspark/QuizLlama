@@ -7,7 +7,8 @@ const App: React.FC = () => {
     null
   );
   const [connected, setConnected] = useState(false);
-
+  const [playersAnswered, setPlayersAnswered] = useState(0);
+  
   useEffect(() => {
     const newConnection = new signalR.HubConnectionBuilder()
       .withUrl("http://localhost:5114/quizhub")
@@ -30,9 +31,18 @@ const App: React.FC = () => {
     };
   }, [connection]);
 
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+    connection.on("PlayerAnswered", () => {
+      setPlayersAnswered(playersAnswered + 1);
+    });    
+  }, [connection]);
+
   if (!connection || !connected) {
     return <div>Connecting...</div>;
   }
-  return <AdminPanel connection={connection} />;
+  return <AdminPanel connection={connection} playersAnswered={playersAnswered} />;
 };
 export default App;
