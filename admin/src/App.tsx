@@ -36,7 +36,7 @@ const App: React.FC = () => {
       return;
     }
     connection.on("PlayerAnswered", () => {
-      setPlayersAnswered(playersAnswered + 1);
+      setPlayersAnswered(prev => prev + 1);
     });    
   }, [connection]);
 
