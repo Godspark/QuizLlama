@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
 import QuizUI from './QuizUI'
-import { QuestionType } from './Questions/QuestionType'
 import './App.css'
+import { QuestionType, MultipleChoiceQuestion, TrueFalseQuestion, TypeAnswerQuestion, MultipleChoiceAlternative } from './api/Types'
 
 function App() {
     const [connection, setConnection] = useState<HubConnection | null>(null)
-    const [question, setQuestion] = useState<string>('Waiting for question...')
+    const [question, setQuestion] = useState<Question>(null)
     const [options, setOptions] = useState<string[]>([])
     const [type, setType] = useState<QuestionType | null>(null)
 
@@ -30,9 +30,26 @@ function App() {
                     console.log('Connected to Quiz Hub!')
 
                     connection.on('ReceiveQuestion', (question: Question) => {
-                        setQuestion(question)
-                        setOptions(options)
-                        setType(type)
+                        switch (question.questionType) {
+                            case QuestionType.MultipleChoice:
+                                const mcq = question as MultipleChoiceQuestion;
+                                setQuestion(mcq);
+                                setOptions(mcq.alternatives?.map((alt: MultipleChoiceAlternative) => alt.text) || []);
+                                break;
+                            case QuestionType.TrueFalse:
+                                const tf = question as TrueFalseQuestion;
+                                setQuestion(tf);
+                                setOptions(["True", "False"]);
+                                break;
+                            case QuestionType.TypeAnswer:
+                                const ta = question as TypeAnswerQuestion;
+                                setQuestion(ta);
+                                setOptions(["Type your answer here..."]);
+                                break;
+                            default:
+                                setOptions(["dummy1", "dummy2", "dummy3", "dummy4"]);
+                        }
+                        setType(question.questionType);
                     })
                 })
                 .catch(err => console.error('Error connecting to Quiz Hub:', err))
@@ -54,7 +71,7 @@ function App() {
 
     return (
         <QuizUI
-            question={question}
+            question={question?.questionText ?? 'Waiting for question...'}
             options={options}
             type={type}
             onAnswerSelect={handleAnswerSelect}

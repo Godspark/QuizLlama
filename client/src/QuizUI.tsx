@@ -1,5 +1,4 @@
 import React from 'react'
-import { QuestionType } from './Questions/QuestionType'
 
 interface QuizUIProps {
     question: string

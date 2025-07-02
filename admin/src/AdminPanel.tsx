@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import * as signalR from '@microsoft/signalr';
-import {HubConnection} from '@microsoft/signalr';
+import { HubConnection } from '@microsoft/signalr';
 import QuestionDisplay from './QuestionDisplay';
 import Leaderboard from './Leaderboard';
-import { QuestionType } from './QuestionType';
 
 interface AdminPanelProps {
     connection: signalR.HubConnection;
