@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Microsoft.AspNetCore.SignalR;
 using QuizLlamaServer.Questions;
 
@@ -7,6 +6,7 @@ namespace QuizLlamaServer;
 public class QuizHub: Hub
 {
     public List<Question> Questions { get; set; } = new();
+    private static int _currentQuestionIndex = -1;
     private ILogger<QuizHub> _logger;
 
     public QuizHub(ILogger<QuizHub> logger)
@@ -29,6 +29,17 @@ public class QuizHub: Hub
                 new MultipleChoiceAlternative { Text = "Rome", Index = 3 }
             ],
         });
+        Questions.Add(new TrueFalseQuestion
+        {
+            QuestionId = Guid.NewGuid(),
+            QuestionType = QuestionType.TrueFalse,
+            QuestionText = "The Earth is flat.",
+            ImageUrl = "https://example.com/earth.jpg",
+            Explanation = "The Earth is an oblate spheroid, not flat.",
+            CategoryId = 2,
+            Difficulty = 1,
+            CorrectAnswer = false
+        });
     }
     
     // Host sends a new question
@@ -36,7 +47,8 @@ public class QuizHub: Hub
     {
         //only admin should be able to send questions
         _logger.LogInformation("NextQuestion");
-        await Clients.All.SendAsync("ReceiveQuestion", Questions[0]);
+        _currentQuestionIndex++;
+        await Clients.All.SendAsync("ReceiveQuestion", Questions[_currentQuestionIndex]);
     }
 
     // Player submits an answer
