@@ -40,9 +40,22 @@ const App: React.FC = () => {
     });    
   }, [connection]);
 
+  const nextQuestion = async () => {
+    if (!connection) {
+      return;
+    }
+    try {
+      console.log('NextQuestion');
+      await connection.invoke('NextQuestion');
+      setPlayersAnswered(0); // Bør sikkert vente på ack fra serveren
+    } catch (err) {
+      console.error('SignalR error:', err);
+    }
+  };
+  
   if (!connection || !connected) {
     return <div>Connecting...</div>;
   }
-  return <AdminPanel connection={connection} playersAnswered={playersAnswered} />;
+  return <AdminPanel onNextQuestion={nextQuestion} playersAnswered={playersAnswered} />;
 };
 export default App;

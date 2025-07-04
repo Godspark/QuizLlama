@@ -11,11 +11,12 @@ import type {
 } from "./api/Types";
 import { QuestionType } from "./api/Types";
 
-function App() {
+const App: React.FC = () => {
   const [connection, setConnection] = useState<HubConnection | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [options, setOptions] = useState<string[]>([]);
   const [type, setType] = useState<QuestionType | undefined>(undefined);
+  const [hasAnswered, setHasAnswered] = useState(false);
 
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
@@ -35,40 +36,55 @@ function App() {
       connection
         .start()
         .then(() => {
-          console.log("Connected to Quiz Hub!");
-
-          connection.on("ReceiveQuestion", (question: Question) => {
-            switch (question.questionType) {
-              case QuestionType.MultipleChoice: {
-                const mcq = question as MultipleChoiceQuestion;
-                setQuestion(mcq);
-                setOptions(
-                  mcq.alternatives
-                    ?.map((alt: MultipleChoiceAlternative) => alt.text)
-                    .filter((text): text is string => text != null) || []
-                );
-                break;
-              }
-              case QuestionType.TrueFalse: {
-                const tf = question as TrueFalseQuestion;
-                setQuestion(tf);
-                setOptions(["True", "False"]);
-                break;
-              }
-              case QuestionType.TypeAnswer: {
-                const ta = question as TypeAnswerQuestion;
-                setQuestion(ta);
-                setOptions(["Type your answer here..."]);
-                break;
-              }
-              default:
-                setOptions(["dummy1", "dummy2", "dummy3", "dummy4"]);
-            }
-            setType(question.questionType);
-          });
+          console.log("Connected to Quiz Hub!");  
         })
         .catch((err) => console.error("Error connecting to Quiz Hub:", err));
     }
+  }, [connection]);
+
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+    connection.on("ReceiveQuestion", (question: Question) => {
+      setHasAnswered(false);
+      switch (question.questionType) {
+        case QuestionType.MultipleChoice: {
+          const mcq = question as MultipleChoiceQuestion;
+          setQuestion(mcq);
+          setOptions(
+              mcq.alternatives
+                  ?.map((alt: MultipleChoiceAlternative) => alt.text)
+                  .filter((text): text is string => text != null) || []
+          );
+          break;
+        }
+        case QuestionType.TrueFalse: {
+          const tf = question as TrueFalseQuestion;
+          setQuestion(tf);
+          setOptions(["True", "False"]);
+          break;
+        }
+        case QuestionType.TypeAnswer: {
+          const ta = question as TypeAnswerQuestion;
+          setQuestion(ta);
+          setOptions(["Type your answer here..."]);
+          break;
+        }
+        default:
+          setOptions(["dummy1", "dummy2", "dummy3", "dummy4"]);
+      }
+      setType(question.questionType);
+    });  
+  }, [connection]);
+
+  useEffect(() => {
+    if (!connection) {
+      return;      
+    }
+    connection.on("AnswerReceived", () => {
+      setHasAnswered(true);
+    });
   }, [connection]);
 
   const handleAnswerSelect = (answer: string) => {
@@ -84,14 +100,16 @@ function App() {
     }
   };
 
-  return (
+  return hasAnswered ? (
+    <div>I hope it was the right answer!</div>
+  ) : (
     <QuizUI
       question={question?.questionText ?? "Waiting for question..."}
       options={options}
       type={type!}
       onAnswerSelect={handleAnswerSelect}
     />
-  );
+  );  
 }
 
 export default App;
