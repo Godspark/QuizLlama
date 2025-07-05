@@ -49,13 +49,25 @@ const App: React.FC = () => {
       await connection.invoke('NextQuestion');
       setPlayersAnswered(0); // Bør sikkert vente på ack fra serveren
     } catch (err) {
-      console.error('SignalR error:', err);
+      console.error('Admin: SignalR error on NextQuestion:', err);
+    }
+  };
+
+  const endRound = async () => {
+    if (!connection) {
+      return;
+    }
+    try {
+      console.log('EndRound');
+      await connection.invoke('EndRound');
+    } catch (err) {
+      console.error('Admin: SignalR error on EndRound:', err);
     }
   };
   
   if (!connection || !connected) {
     return <div>Connecting...</div>;
   }
-  return <AdminPanel onNextQuestion={nextQuestion} playersAnswered={playersAnswered} />;
+  return <AdminPanel onEndRound={endRound} onNextQuestion={nextQuestion} playersAnswered={playersAnswered} />;
 };
 export default App;

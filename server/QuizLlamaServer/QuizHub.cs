@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using QuizLlamaServer.Questions;
+using QuizLlamaServer.Users;
 
 namespace QuizLlamaServer;
 
@@ -8,6 +9,7 @@ public class QuizHub: Hub
     public List<Question> Questions { get; set; } = new();
     private static int _currentQuestionIndex = -1;
     private ILogger<QuizHub> _logger;
+    public List<Player> Players { get; set; } = new();
 
     public QuizHub(ILogger<QuizHub> logger)
     {
@@ -42,26 +44,29 @@ public class QuizHub: Hub
         });
     }
     
-    // Host sends a new question
     public async Task NextQuestion()
     {
-        //only admin should be able to send questions
         _logger.LogInformation("NextQuestion");
-        _currentQuestionIndex++;
+        if (_currentQuestionIndex < Questions.Count - 1)
+        {
+            _currentQuestionIndex++;
+        }
         await Clients.All.SendAsync("ReceiveQuestion", Questions[_currentQuestionIndex]);
     }
+    
+    public async Task EndRound() // Should only be called from admin. And only as a possible override
+    {
+        _logger.LogInformation("Manual End Round");
+        await Clients.All.SendAsync("EndRound");
+    }
 
-    // Player submits an answer
     public async Task SubmitAnswer(string playerName, string answer)
     {
         _logger.LogInformation("Player {PlayerName} submitted answer: {answer}", playerName, answer);
-        // You would process/store the answer on the server here
         await Clients.Caller.SendAsync("AnswerReceived"); // Acknowledge
         await Clients.All.SendAsync("PlayerAnswered");
-        // Optionally: update host or all players
     }
 
-    // Host can broadcast leaderboard updates
     public async Task BroadcastLeaderboard(object leaderboard)
     {
         _logger.LogInformation("Broadcasting leaderboard: {Leaderboard}", leaderboard);

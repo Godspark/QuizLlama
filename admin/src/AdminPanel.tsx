@@ -5,13 +5,15 @@ import Leaderboard from './Leaderboard';
 interface AdminPanelProps {
     playersAnswered: number;
     onNextQuestion: () => void;
+    onEndRound: () => void;
 }
 
 const questions = ["what is dog"];
 
-const AdminPanel: React.FC<AdminPanelProps> = ({playersAnswered, onNextQuestion}) => {
-    const [currentQuestion, setCurrentQuestionQuestion] = useState(0);
+const AdminPanel: React.FC<AdminPanelProps> = ({playersAnswered, onNextQuestion, onEndRound}) => {
+    const [currentQuestion, setCurrentQuestion] = useState(0);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const [showRoundResults, setShowRoundResults] = useState(false);
 
     return (
         <div>
@@ -22,16 +24,34 @@ const AdminPanel: React.FC<AdminPanelProps> = ({playersAnswered, onNextQuestion}
             ) : (
                 <Leaderboard/>
             )}
+            {showRoundResults && <div>Round Results Placeholder</div>}
             <button
                 onClick={() => {
                     onNextQuestion();
                     setShowLeaderboard(false);
-                    setCurrentQuestionQuestion((prev) => prev + 1);                    
+                    setShowRoundResults(false);
+                    setCurrentQuestion((prev) => prev + 1);                    
                 }}
             >
                 Next Question
             </button>
-            <button onClick={() => setShowLeaderboard(true)}>Show Leaderboard</button>
+            <button
+                onClick={() => {
+                    onEndRound();
+                    setShowLeaderboard(false);
+                    setShowRoundResults(true);
+                }}
+            >
+                End Round
+            </button>
+            <button 
+                onClick={() => {
+                    setShowLeaderboard(true);
+                    setShowRoundResults(true);  
+                }}
+            >
+                Show Leaderboard
+            </button>
         </div>
     );
 };
