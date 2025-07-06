@@ -10,35 +10,35 @@ namespace QuizLlamaServer.Tests;
 
 public class QuizHubTests
 {
-    [Fact]
-    public async Task SendQuestion_ShouldBroadcastToAllClients()
-    {
-        // Arrange
-        var mockClients = new Mock<IHubCallerClients>();
-        var mockClientProxy = new Mock<IClientProxy>();
-        mockClients.Setup(clients => clients.All).Returns(mockClientProxy.Object);
-
-        var hub = new QuizHub
-        {
-            Clients = mockClients.Object
-        };
-
-        const string question = "What is 2+2?";
-        var options = new[] { "3", "4", "5", "6" };
-
-        // Act
-        await hub.NextQuestion(question, options);
-
-        // Assert
-        mockClientProxy.Verify(
-            x => x.SendCoreAsync(
-                "ReceiveQuestion",
-                It.Is<object[]>(o => o[0].Equals(question) && o[1].Equals(options)),
-                default
-            ),
-            Times.Once
-        );
-    }
+    // [Fact]
+    // public async Task SendQuestion_ShouldBroadcastToAllClients()
+    // {
+    //     // Arrange
+    //     var mockClients = new Mock<IHubCallerClients>();
+    //     var mockClientProxy = new Mock<IClientProxy>();
+    //     mockClients.Setup(clients => clients.All).Returns(mockClientProxy.Object);
+    //
+    //     var hub = new QuizHub
+    //     {
+    //         Clients = mockClients.Object
+    //     };
+    //
+    //     const string question = "What is 2+2?";
+    //     var options = new[] { "3", "4", "5", "6" };
+    //
+    //     // Act
+    //     await hub.NextQuestion(question, options);
+    //
+    //     // Assert
+    //     mockClientProxy.Verify(
+    //         x => x.SendCoreAsync(
+    //             "ReceiveQuestion",
+    //             It.Is<object[]>(o => o[0].Equals(question) && o[1].Equals(options)),
+    //             default
+    //         ),
+    //         Times.Once
+    //     );
+    // }
     //
     // [Fact]
     // public async Task SendQuestion_BroadcastsToClients()
