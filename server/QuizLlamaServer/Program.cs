@@ -16,6 +16,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<IGameService, GameService>();
 
 // Add Swagger services
 builder.Services.AddControllers();
