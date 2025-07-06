@@ -10,6 +10,7 @@ public class QuizHub: Hub
     private static int _currentQuestionIndex = -1;
     private ILogger<QuizHub> _logger;
     public List<Player> Players { get; set; } = new();
+    private static int _playersAnsweredCounter = 0;
 
     public QuizHub(ILogger<QuizHub> logger)
     {
@@ -43,28 +44,38 @@ public class QuizHub: Hub
             CorrectAnswer = false
         });
     }
+
+    public async Task StartGame()
+    {
+        _logger.LogInformation("StartGame");
+        _currentQuestionIndex = 0;
+        _playersAnsweredCounter = 0;
+        await Clients.All.SendAsync("GameStarted", Questions[_currentQuestionIndex]);
+    }
+    
+    public async Task EndRound() // Should only be called from admin. And only as a possible override
+    {
+        _logger.LogInformation("Manual End Round");
+        await Clients.All.SendAsync("RoundEnded");
+    }
     
     public async Task NextQuestion()
     {
         _logger.LogInformation("NextQuestion");
+        _playersAnsweredCounter = 0;
         if (_currentQuestionIndex < Questions.Count - 1)
         {
             _currentQuestionIndex++;
         }
         await Clients.All.SendAsync("ReceiveQuestion", Questions[_currentQuestionIndex]);
     }
-    
-    public async Task EndRound() // Should only be called from admin. And only as a possible override
-    {
-        _logger.LogInformation("Manual End Round");
-        await Clients.All.SendAsync("EndRound");
-    }
 
     public async Task SubmitAnswer(string playerName, string answer)
     {
         _logger.LogInformation("Player {PlayerName} submitted answer: {answer}", playerName, answer);
+        _playersAnsweredCounter++;
         await Clients.Caller.SendAsync("AnswerReceived"); // Acknowledge
-        await Clients.All.SendAsync("PlayerAnswered");
+        await Clients.All.SendAsync("UpdatePlayersAnsweredCounter", _playersAnsweredCounter);
     }
 
     public async Task BroadcastLeaderboard(object leaderboard)

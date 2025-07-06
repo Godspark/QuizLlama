@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-import AdminPanel from "./AdminPanel";
+import type {Question} from "./api/Types";
+import Lobby from "./views/Lobby";
+import QuestionDisplay from "./views/QuestionDisplay";
+import RoundResults from "./views/RoundResults";
+// import Leaderboard from "./views/Leaderboard";
 
 const App: React.FC = () => {
   const [connection, setConnection] = useState<signalR.HubConnection | null>(
     null
   );
   const [connected, setConnected] = useState(false);
-  const [playersAnswered, setPlayersAnswered] = useState(0);
+  const [playersAnsweredCounter, setplayersAnsweredCounter] = useState(0);   
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [showLobby, setShowLobby] = useState(true);
+  const [showQuestion, setShowQuestion] = useState(false);
+  // const [showRoundLeaderboard, setShowRoundLeaderboard] = useState(false);
+  const [showRoundResults, setShowRoundResults] = useState(false);
   
   useEffect(() => {
     const newConnection = new signalR.HubConnectionBuilder()
@@ -35,11 +44,58 @@ const App: React.FC = () => {
     if (!connection) {
       return;
     }
-    connection.on("PlayerAnswered", () => {
-      setPlayersAnswered(prev => prev + 1);
-    });    
+    connection.on("GameStarted", (question: Question) => {
+      setplayersAnsweredCounter(0);
+      setCurrentQuestion(question);
+      setShowLobby(false);
+      setShowQuestion(true);
+      setShowRoundResults(false);
+    });
   }, [connection]);
 
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+    connection.on("ReceiveQuestion", (question: Question) => {
+      setplayersAnsweredCounter(0);
+      setCurrentQuestion(question);      
+      setShowQuestion(true);
+      setShowRoundResults(false);
+    });
+  }, [connection]);
+  
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+    connection.on("UpdatePlayersAnsweredCounter", (playersAnswered: number) => {
+      setplayersAnsweredCounter(playersAnswered);
+    });
+  }, [connection]);
+  
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+    connection.on("RoundEnded", () => {      
+      setShowQuestion(false);
+      setShowRoundResults(true);
+    });
+  }, [connection]);
+
+  const startGame = async () => {
+    if (!connection) {
+      return;
+    }
+    try {
+      console.log('startGame');
+      await connection.invoke('StartGame');
+    } catch (err) {
+      console.error('Admin: SignalR error on StartGame:', err);
+    }
+  };
+  
   const nextQuestion = async () => {
     if (!connection) {
       return;
@@ -47,7 +103,6 @@ const App: React.FC = () => {
     try {
       console.log('NextQuestion');
       await connection.invoke('NextQuestion');
-      setPlayersAnswered(0); // Bør sikkert vente på ack fra serveren
     } catch (err) {
       console.error('Admin: SignalR error on NextQuestion:', err);
     }
@@ -64,10 +119,22 @@ const App: React.FC = () => {
       console.error('Admin: SignalR error on EndRound:', err);
     }
   };
-  
+
   if (!connection || !connected) {
     return <div>Connecting...</div>;
   }
-  return <AdminPanel onEndRound={endRound} onNextQuestion={nextQuestion} playersAnswered={playersAnswered} />;
+  if (showLobby) {
+    return <Lobby onStartGame={startGame} />;
+  }
+  if (showQuestion && currentQuestion !== null) {
+      return <QuestionDisplay question={currentQuestion} onEndRound={endRound} playersAnswered={playersAnsweredCounter} />;
+  }
+  if (showRoundResults) {
+    return <RoundResults onNextQuestion={nextQuestion} />;
+  }
+  // if (showRoundLeaderboard) {
+  //   return <Leaderboard />;
+  // }
+  
 };
 export default App;

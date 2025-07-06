@@ -17,7 +17,41 @@ const App: React.FC = () => {
   const [options, setOptions] = useState<string[]>([]);
   const [type, setType] = useState<QuestionType | undefined>(undefined);
   const [hasAnswered, setHasAnswered] = useState(false);
+  const [showRoundResults, setShowRoundResults] = useState(false);  
 
+  const handleReceiveQuestion = (question: Question) => {
+    setHasAnswered(false);
+    setShowRoundResults(false);
+    switch (question.questionType) {
+      case QuestionType.MultipleChoice: {
+        const mcq = question as MultipleChoiceQuestion;
+        setQuestion(mcq);
+        setOptions(
+            mcq.alternatives
+                ?.map((alt: MultipleChoiceAlternative) => alt.text)
+                .filter((text): text is string => text != null) || []
+        );
+        break;
+      }
+      case QuestionType.TrueFalse: {
+        const tf = question as TrueFalseQuestion;
+        setQuestion(tf);
+        setOptions(["True", "False"]);
+        break;
+      }
+      case QuestionType.TypeAnswer: {
+        const ta = question as TypeAnswerQuestion;
+        setQuestion(ta);
+        setOptions(["Type your answer here..."]);
+        break;
+      }
+      default:
+        setOptions(["dummy1", "dummy2", "dummy3", "dummy4"]);
+    }
+    setType(question.questionType);
+  };
+  
+  
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
       .withUrl("http://localhost:5114/quizhub")
@@ -46,36 +80,8 @@ const App: React.FC = () => {
     if (!connection) {
       return;
     }
-    connection.on("ReceiveQuestion", (question: Question) => {
-      setHasAnswered(false);
-      switch (question.questionType) {
-        case QuestionType.MultipleChoice: {
-          const mcq = question as MultipleChoiceQuestion;
-          setQuestion(mcq);
-          setOptions(
-              mcq.alternatives
-                  ?.map((alt: MultipleChoiceAlternative) => alt.text)
-                  .filter((text): text is string => text != null) || []
-          );
-          break;
-        }
-        case QuestionType.TrueFalse: {
-          const tf = question as TrueFalseQuestion;
-          setQuestion(tf);
-          setOptions(["True", "False"]);
-          break;
-        }
-        case QuestionType.TypeAnswer: {
-          const ta = question as TypeAnswerQuestion;
-          setQuestion(ta);
-          setOptions(["Type your answer here..."]);
-          break;
-        }
-        default:
-          setOptions(["dummy1", "dummy2", "dummy3", "dummy4"]);
-      }
-      setType(question.questionType);
-    });  
+    connection.on("GameStarted", handleReceiveQuestion);
+    connection.on("ReceiveQuestion", handleReceiveQuestion);
   }, [connection]);
 
   useEffect(() => {
@@ -84,6 +90,15 @@ const App: React.FC = () => {
     }
     connection.on("AnswerReceived", () => {
       setHasAnswered(true);
+    });
+  }, [connection]);
+
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+    connection.on("RoundEnded", () => {
+      setShowRoundResults(true);
     });
   }, [connection]);
 
@@ -100,16 +115,20 @@ const App: React.FC = () => {
     }
   };
 
-  return hasAnswered ? (
-    <div>I hope it was the right answer!</div>
-  ) : (
+  if (showRoundResults) {
+    return <div>Round results will be displayed here.</div>;
+  }
+  if (hasAnswered) {
+    return <div>I hope it was the right answer!</div>
+  }
+  return (
     <QuizUI
       question={question?.questionText ?? "Waiting for question..."}
       options={options}
       type={type!}
       onAnswerSelect={handleAnswerSelect}
     />
-  );  
+  );
 }
 
 export default App;
