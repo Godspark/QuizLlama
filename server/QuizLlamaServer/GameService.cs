@@ -3,14 +3,7 @@ using QuizLlamaServer.Questions;
 
 namespace QuizLlamaServer;
 
-public interface IGameService
-{
-    string CreateGameGetRoomCode(string hostConnectionId);
-    Game? GetGame(string roomCode);
-    bool JoinGame(string roomCode, string nickname, string connectionId);
-}
-
-public class GameService : IGameService
+public class GameService
 {
     private readonly Dictionary<string, Game> _games = new();
     private static readonly Random Random = new();

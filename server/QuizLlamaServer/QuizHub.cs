@@ -4,11 +4,11 @@ namespace QuizLlamaServer;
 
 public class QuizHub : Hub
 {
-    private readonly IGameService _gameService;
+    private readonly GameService _gameService;
 
     private ILogger<QuizHub> _logger;
 
-    public QuizHub(ILogger<QuizHub> logger, IGameService gameService)
+    public QuizHub(ILogger<QuizHub> logger, GameService gameService)
     {
         _gameService = gameService;
         _logger = logger;
