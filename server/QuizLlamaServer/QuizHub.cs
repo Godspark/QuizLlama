@@ -43,6 +43,17 @@ public class QuizHub: Hub
             Difficulty = 1,
             CorrectAnswer = false
         });
+        Questions.Add(new TypeAnswerQuestion
+        {
+            QuestionId = Guid.NewGuid(),
+            QuestionType = QuestionType.TypeAnswer,
+            QuestionText = "What is the largest planet in our solar system?",
+            ImageUrl = "https://example.com/jupiter.jpg",
+            Explanation = "Jupiter is the largest planet in our solar system.",
+            CategoryId = 3,
+            Difficulty = 1,
+            CorrectAnswers = { "Jupiter" }
+        });
     }
 
     public async Task StartGame()
