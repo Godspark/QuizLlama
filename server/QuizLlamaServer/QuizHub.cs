@@ -1,97 +1,119 @@
 using Microsoft.AspNetCore.SignalR;
-using QuizLlamaServer.Questions;
-using QuizLlamaServer.Users;
 
 namespace QuizLlamaServer;
 
-public class QuizHub: Hub
+public class QuizHub : Hub
 {
-    public List<Question> Questions { get; set; } = new();
-    private static int _currentQuestionIndex = -1;
-    private ILogger<QuizHub> _logger;
-    public List<Player> Players { get; set; } = new();
-    private static int _playersAnsweredCounter = 0;
+    private readonly IGameService _gameService;
 
-    public QuizHub(ILogger<QuizHub> logger)
+    private ILogger<QuizHub> _logger;
+
+    public QuizHub(ILogger<QuizHub> logger, IGameService gameService)
     {
+        _gameService = gameService;
         _logger = logger;
-        Questions.Add(new MultipleChoiceQuestion
+    }
+
+    public async Task CreateGame()
+    {
+        _logger.LogInformation("CreateGame");
+        var roomCode = _gameService.CreateGameGetRoomCode(Context.ConnectionId);
+        if (string.IsNullOrWhiteSpace(roomCode))
         {
-            QuestionId = Guid.NewGuid(),
-            QuestionType = QuestionType.MultipleChoice,
-            QuestionText = "What is the capital of France?",
-            ImageUrl = "https://example.com/paris.jpg",
-            Explanation = "Paris is the capital and most populous city of France.",
-            CategoryId = 1,
-            Difficulty = 1,
-            Alternatives =
-            [
-                new MultipleChoiceAlternative { Text = "Berlin", Index = 0 },
-                new MultipleChoiceAlternative { Text = "Madrid", Index = 1 },
-                new MultipleChoiceAlternative { Text = "Paris", Index = 2 },
-                new MultipleChoiceAlternative { Text = "Rome", Index = 3 }
-            ],
-        });
-        Questions.Add(new TrueFalseQuestion
-        {
-            QuestionId = Guid.NewGuid(),
-            QuestionType = QuestionType.TrueFalse,
-            QuestionText = "The Earth is flat.",
-            ImageUrl = "https://example.com/earth.jpg",
-            Explanation = "The Earth is an oblate spheroid, not flat.",
-            CategoryId = 2,
-            Difficulty = 1,
-            CorrectAnswer = false
-        });
-        Questions.Add(new TypeAnswerQuestion
-        {
-            QuestionId = Guid.NewGuid(),
-            QuestionType = QuestionType.TypeAnswer,
-            QuestionText = "What is the largest planet in our solar system?",
-            ImageUrl = "https://example.com/jupiter.jpg",
-            Explanation = "Jupiter is the largest planet in our solar system.",
-            CategoryId = 3,
-            Difficulty = 1,
-            CorrectAnswers = { "Jupiter" }
-        });
+            await Clients.Caller.SendAsync("FailedToCreateGame");
+            _logger.LogError("FailedToCreateGame");
+            return;
+        }
+
+        Context.Items["RoomCode"] = roomCode;
+        await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
+        await Clients.Caller.SendAsync("CreateGame", roomCode);
     }
 
     public async Task StartGame()
     {
         _logger.LogInformation("StartGame");
-        _currentQuestionIndex = 0;
-        _playersAnsweredCounter = 0;
-        await Clients.All.SendAsync("GameStarted", Questions[_currentQuestionIndex]);
+        var roomCode = GetRoomCode();
+        var game = _gameService.GetGame(roomCode);
+        if (game is null || Context.ConnectionId != game.HostId)
+            return;
+
+        await Clients.OthersInGroup(roomCode)
+            .SendAsync("GameStarted", game.Questions[game.CurrentQuestionIndex]);
     }
-    
+
     public async Task EndRound() // Should only be called from admin. And only as a possible override
     {
         _logger.LogInformation("Manual End Round");
-        await Clients.All.SendAsync("RoundEnded");
+        var game = _gameService.GetGame(GetRoomCode());
+        if (game is null || Context.ConnectionId != game.HostId)
+            return;
+        await Clients.Group(GetRoomCode()).SendAsync("RoundEnded");
     }
-    
+
     public async Task NextQuestion()
     {
         _logger.LogInformation("NextQuestion");
-        _playersAnsweredCounter = 0;
-        if (_currentQuestionIndex < Questions.Count - 1)
+        var game = _gameService.GetGame(GetRoomCode());
+        if (game is null || Context.ConnectionId != game.HostId)
+            return;
+
+        game.PlayersAnsweredCount = 0;
+        if (game.CurrentQuestionIndex < game.Questions.Count - 1)
         {
-            _currentQuestionIndex++;
+            game.CurrentQuestionIndex++;
         }
-        await Clients.All.SendAsync("ReceiveQuestion", Questions[_currentQuestionIndex]);
+
+        await Clients.OthersInGroup(GetRoomCode())
+            .SendAsync("ReceiveQuestion", game.Questions[game.CurrentQuestionIndex]);
     }
 
     public async Task SubmitAnswer(string playerName, string answer)
     {
         _logger.LogInformation("Player {PlayerName} submitted answer: {answer}", playerName, answer);
-        _playersAnsweredCounter++;
         await Clients.Caller.SendAsync("AnswerReceived"); // Acknowledge
-        await Clients.All.SendAsync("UpdatePlayersAnsweredCounter", _playersAnsweredCounter);
+        var game = _gameService.GetGame(GetRoomCode());
+        if (game is null)
+            return;
+
+        var newCount = game.IncrementPlayersAnsweredCount();
+        await Clients.Group(GetRoomCode()).SendAsync("UpdatePlayersAnsweredCounter", newCount);
     }
 
     public async Task BroadcastLeaderboard(object leaderboard)
     {
         _logger.LogInformation("Broadcasting leaderboard: {Leaderboard}", leaderboard);
         await Clients.All.SendAsync("ReceiveLeaderboard", leaderboard);
+    }
+
+    public async Task JoinGame(string roomCode, string nickname)
+    {
+        _logger.LogInformation("JoinGame");
+        Context.Items["RoomCode"] = roomCode;
+        var joinedGame = _gameService.JoinGame(roomCode, nickname, Context.ConnectionId);
+        if (joinedGame is false)
+            await Clients.Caller.SendAsync("FailedToJoinGame");
+
+        var game = _gameService.GetGame(GetRoomCode());
+        if (game is null)
+            return;
+        if (!game.AddPlayer(nickname, Context.ConnectionId))
+        {
+            await Clients.Caller.SendAsync("Nickname taken");
+            return;
+        }
+
+        await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
+        await Clients.Group(roomCode).SendAsync("PlayerJoined", Context.ConnectionId);
+    }
+
+    private string GetRoomCode()
+    {
+        if (Context.Items.TryGetValue("RoomCode", out var roomCode))
+        {
+            return roomCode as string ?? string.Empty;
+        }
+
+        throw new ArgumentException("No room code available");
     }
 }
