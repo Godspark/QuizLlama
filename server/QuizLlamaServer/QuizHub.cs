@@ -20,14 +20,14 @@ public class QuizHub : Hub
         var roomCode = _gameService.CreateGameGetRoomCode(Context.ConnectionId);
         if (string.IsNullOrWhiteSpace(roomCode))
         {
-            await Clients.Caller.SendAsync("FailedToCreateGame");
             _logger.LogError("FailedToCreateGame");
+            await Clients.Caller.SendAsync("FailedToCreateGame");
             return;
         }
 
         Context.Items["RoomCode"] = roomCode;
         await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
-        await Clients.Caller.SendAsync("CreateGame", roomCode);
+        await Clients.Caller.SendAsync("GameCreated", roomCode);
     }
 
     public async Task StartGame()
@@ -38,8 +38,8 @@ public class QuizHub : Hub
         if (game is null || Context.ConnectionId != game.HostId)
             return;
 
-        await Clients.OthersInGroup(roomCode)
-            .SendAsync("GameStarted", game.Questions[game.CurrentQuestionIndex]);
+        var a = Clients.Group(roomCode);
+        await Clients.Group(roomCode).SendAsync("GameStarted", game.Questions[game.CurrentQuestionIndex]);
     }
 
     public async Task EndRound() // Should only be called from admin. And only as a possible override
@@ -90,20 +90,26 @@ public class QuizHub : Hub
     {
         _logger.LogInformation("JoinGame");
         Context.Items["RoomCode"] = roomCode;
-        var joinedGame = _gameService.JoinGame(roomCode, nickname, Context.ConnectionId);
-        if (joinedGame is false)
-            await Clients.Caller.SendAsync("FailedToJoinGame");
-
         var game = _gameService.GetGame(GetRoomCode());
         if (game is null)
-            return;
-        if (!game.AddPlayer(nickname, Context.ConnectionId))
         {
-            await Clients.Caller.SendAsync("Nickname taken");
+            await Clients.Caller.SendAsync("GameNotFound");
             return;
+        }
+        if (game.IsPlayerNameTaken(nickname))
+        {
+            await Clients.Caller.SendAsync("NicknameTaken");
+            return;
+        }
+        
+        var joinedGame = _gameService.JoinGame(roomCode, nickname, Context.ConnectionId);
+        if (joinedGame is false)
+        {
+            await Clients.Caller.SendAsync("FailedToJoinGame");
         }
 
         await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
+        await Clients.Caller.SendAsync("GameJoined");
         await Clients.Group(roomCode).SendAsync("PlayerJoined", Context.ConnectionId);
     }
 

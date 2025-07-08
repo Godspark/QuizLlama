@@ -9,8 +9,9 @@ public class Game(string hostId)
 
     public int CurrentQuestionIndex { get; set; } = 0;
     private int _playersAnsweredCount = 0;
-    public int PlayersAnsweredCount 
-    { 
+
+    public int PlayersAnsweredCount
+    {
         get => _playersAnsweredCount;
         set => _playersAnsweredCount = value;
     }
@@ -28,12 +29,19 @@ public class Game(string hostId)
         };
 
         if (Players.Any(x => x.Nickname == nickname))
+        {
             return false;
+        }
 
         Players.Add(player);
         return true;
     }
-    
+
+    public bool IsPlayerNameTaken(string nickname)
+    {
+        return Players.Any(x => x.Nickname == nickname);
+    }
+
     public int IncrementPlayersAnsweredCount()
     {
         return Interlocked.Increment(ref _playersAnsweredCount);

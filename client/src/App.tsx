@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 import QuizUI from "./QuizUI";
+import Login from "./connection/Login";
 import "./App.css";
 import type {
   MultipleChoiceAlternative,
@@ -13,6 +14,7 @@ import { QuestionType } from "./api/Types";
 
 const App: React.FC = () => {
   const [connection, setConnection] = useState<HubConnection | null>(null);
+  const [hasJoined, setHasJoined] = useState(false);
   const [question, setQuestion] = useState<Question | null>(null);
   const [options, setOptions] = useState<string[]>([]);
   const [type, setType] = useState<QuestionType | undefined>(undefined);
@@ -83,6 +85,16 @@ const App: React.FC = () => {
     connection.on("GameStarted", handleReceiveQuestion);
     connection.on("ReceiveQuestion", handleReceiveQuestion);
   }, [connection]);
+  
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+    connection.on("GameJoined", () => {
+      console.log("GameJoined");
+      setHasJoined(true);
+    });
+  }, [connection]);
 
   useEffect(() => {
     if (!connection) {
@@ -102,6 +114,19 @@ const App: React.FC = () => {
     });
   }, [connection]);
 
+  const joinGame = (roomcode: string, nickname: string) => {
+    console.log("Joining game");
+    try {
+      if (!connection) {
+        console.error("Connection is not established.");
+        return;
+      }
+      connection.invoke("JoinGame", roomcode, nickname);
+    } catch (err) {
+      console.error("SignalR error:", err);
+    }
+  };
+  
   const handleAnswerSelect = (answer: string) => {
     console.log("Selected answer:", answer);
     try {
@@ -122,12 +147,14 @@ const App: React.FC = () => {
     return <div>I hope it was the right answer!</div>
   }
   return (
-    <QuizUI
-      question={question?.questionText ?? "Waiting for question..."}
-      options={options}
-      type={type!}
-      onAnswerSelect={handleAnswerSelect}
-    />
+      !hasJoined ?
+          <Login onJoinGame={joinGame}/> :
+          <QuizUI
+              question={question?.questionText ?? "Waiting for question..."}
+              options={options}
+              type={type!}
+              onAnswerSelect={handleAnswerSelect}
+          />
   );
 }
 

@@ -11,6 +11,7 @@ const App: React.FC = () => {
     null
   );
   const [connected, setConnected] = useState(false);
+  const [roomcode, setRoomcode] = useState("");
   const [playersAnsweredCounter, setplayersAnsweredCounter] = useState(0);   
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [showLobby, setShowLobby] = useState(true);
@@ -44,12 +45,26 @@ const App: React.FC = () => {
     if (!connection) {
       return;
     }
+    connection.on("GameCreated", (roomcode: string) => {
+      setRoomcode(roomcode);
+      setShowLobby(true);
+      setShowQuestion(false);
+      setShowRoundResults(false);
+    });
+  }, [connection]);
+
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
     connection.on("GameStarted", (question: Question) => {
+      console.log(GameStarted);
       setplayersAnsweredCounter(0);
       setCurrentQuestion(question);
       setShowLobby(false);
       setShowQuestion(true);
       setShowRoundResults(false);
+      console.log(showQuestion);
     });
   }, [connection]);
 
@@ -84,6 +99,18 @@ const App: React.FC = () => {
     });
   }, [connection]);
 
+  const createGame = async () => {
+    if (!connection) {
+      return;
+    }
+    try {
+      console.log('createGame');
+      await connection.invoke('CreateGame');
+    } catch (err) {
+      console.error('Admin: SignalR error on CreateGame:', err);
+    }
+  };
+  
   const startGame = async () => {
     if (!connection) {
       return;
@@ -124,7 +151,7 @@ const App: React.FC = () => {
     return <div>Connecting...</div>;
   }
   if (showLobby) {
-    return <Lobby onStartGame={startGame} />;
+    return <Lobby onStartGame={startGame} onCreateGame={createGame} roomcode={roomcode} />;
   }
   if (showQuestion && currentQuestion !== null) {
       return <QuestionDisplay question={currentQuestion} onEndRound={endRound} playersAnswered={playersAnsweredCounter} />;
