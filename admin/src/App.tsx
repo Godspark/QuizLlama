@@ -58,7 +58,6 @@ const App: React.FC = () => {
       return;
     }
     connection.on("GameStarted", (question: Question) => {
-      console.log(GameStarted);
       setplayersAnsweredCounter(0);
       setCurrentQuestion(question);
       setShowLobby(false);

@@ -54,7 +54,8 @@ public class QuizHub : Hub
     public async Task NextQuestion()
     {
         _logger.LogInformation("NextQuestion");
-        var game = _gameService.GetGame(GetRoomCode());
+        var roomCode = GetRoomCode();
+        var game = _gameService.GetGame(roomCode);
         if (game is null || Context.ConnectionId != game.HostId)
             return;
 
@@ -64,7 +65,7 @@ public class QuizHub : Hub
             game.CurrentQuestionIndex++;
         }
 
-        await Clients.OthersInGroup(GetRoomCode())
+        await Clients.Group(roomCode)
             .SendAsync("ReceiveQuestion", game.Questions[game.CurrentQuestionIndex]);
     }
 
