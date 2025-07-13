@@ -3,8 +3,13 @@ using QuizLlamaServer.Users;
 
 namespace QuizLlamaServer.Models;
 
-public class Game(string hostId)
+public class Game
 {
+    public Game(string adminConnectionId)
+    {
+        Admin = new Admin { ConnectionId = adminConnectionId };
+    }
+    public Admin Admin { get; set; }
     public List<Player> Players { get; set; } = [];
 
     public int CurrentQuestionIndex { get; set; } = 0;
@@ -17,8 +22,6 @@ public class Game(string hostId)
     }
 
     public List<Question> Questions { get; set; } = [];
-
-    public string HostId { get; set; } = hostId;
 
     public bool AddPlayer(string nickname, string connectionId)
     {

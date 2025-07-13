@@ -7,6 +7,8 @@ public class QuizHub : Hub
     private readonly GameService _gameService;
 
     private ILogger<QuizHub> _logger;
+    
+    private const string AdminGroupPostfix = "-admin";
 
     public QuizHub(ILogger<QuizHub> logger, GameService gameService)
     {
@@ -26,6 +28,7 @@ public class QuizHub : Hub
         }
 
         Context.Items["RoomCode"] = roomCode;
+        await Groups.AddToGroupAsync(Context.ConnectionId, roomCode+AdminGroupPostfix);
         await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
         await Clients.Caller.SendAsync("GameCreated", roomCode);
     }
@@ -35,7 +38,7 @@ public class QuizHub : Hub
         _logger.LogInformation("StartGame");
         var roomCode = GetRoomCode();
         var game = _gameService.GetGame(roomCode);
-        if (game is null || Context.ConnectionId != game.HostId)
+        if (game is null || Context.ConnectionId != game.Admin.ConnectionId)
             return;
 
         var a = Clients.Group(roomCode);
@@ -44,11 +47,23 @@ public class QuizHub : Hub
 
     public async Task EndRound() // Should only be called from admin. And only as a possible override
     {
-        _logger.LogInformation("Manual End Round");
-        var game = _gameService.GetGame(GetRoomCode());
-        if (game is null || Context.ConnectionId != game.HostId)
+        var roomCode = GetRoomCode();
+        var game = _gameService.GetGame(roomCode);
+        if (game is null)
+        {
+            _logger.LogError("EndRound(): Game with roomcode: {RoomCode} is null", roomCode);
             return;
-        await Clients.Group(GetRoomCode()).SendAsync("RoundEnded");
+        }
+        var adminConnectionId = game.Admin.ConnectionId;
+        if (Context.ConnectionId != adminConnectionId)
+        {
+            _logger.LogError("Non-admin user: {ContextConnectionId} tried to end round in room {RoomCode}, where admin connectionId is {AdminConnectionId}", Context.ConnectionId, roomCode, adminConnectionId);
+            return;
+        }
+        _logger.LogInformation("Manual End Round");
+        
+        await Clients.Group(roomCode)
+            .SendAsync("RoundEnded");
     }
 
     public async Task NextQuestion()
@@ -56,7 +71,7 @@ public class QuizHub : Hub
         _logger.LogInformation("NextQuestion");
         var roomCode = GetRoomCode();
         var game = _gameService.GetGame(roomCode);
-        if (game is null || Context.ConnectionId != game.HostId)
+        if (game is null || Context.ConnectionId != game.Admin.ConnectionId)
             return;
 
         game.PlayersAnsweredCount = 0;
@@ -72,7 +87,7 @@ public class QuizHub : Hub
     public async Task SubmitAnswer(string playerName, string answer)
     {
         _logger.LogInformation("Player {PlayerName} submitted answer: {answer}", playerName, answer);
-        await Clients.Caller.SendAsync("AnswerReceived"); // Acknowledge
+        await Clients.Caller.SendAsync("AnswerReceived");
         var game = _gameService.GetGame(GetRoomCode());
         if (game is null)
             return;
