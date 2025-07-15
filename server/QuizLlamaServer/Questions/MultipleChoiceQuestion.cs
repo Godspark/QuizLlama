@@ -5,7 +5,7 @@ public class MultipleChoiceQuestion : Question
     public List<MultipleChoiceAlternative> Alternatives { get; set; } = new();
     public List<int> CorrectAlternativeIndices { get; set; } = new();
 
-    public override bool CheckAnswer(object answer)
+    public override Correctness CheckAnswer(object answer)
     {
         if (answer is not int answerInt)
         {
@@ -16,6 +16,6 @@ public class MultipleChoiceQuestion : Question
             throw new ArgumentOutOfRangeException(nameof(answer), "Answer must be a valid index of an alternative.");
         }
         
-        return CorrectAlternativeIndices.Contains(answerInt);
+        return CorrectAlternativeIndices.Contains(answerInt) ? Correctness.Correct : Correctness.Incorrect;
     }
 }

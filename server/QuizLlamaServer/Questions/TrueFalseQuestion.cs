@@ -9,13 +9,13 @@ public class TrueFalseQuestion : Question
         QuestionType = QuestionType.TrueFalse;
     }
     
-    public override bool CheckAnswer(object answer)
+    public override Correctness CheckAnswer(object answer)
     {
         if (answer is not bool answerBool)
         {
             throw new ArgumentException("Answer must be a boolean.", nameof(answer));
         }
         
-        return answerBool == CorrectAnswer;
+        return answerBool == CorrectAnswer ? Correctness.Correct : Correctness.Incorrect;
     }
 }

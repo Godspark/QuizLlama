@@ -38,14 +38,22 @@ public class QuizHub : Hub
         _logger.LogInformation("StartGame");
         var roomCode = GetRoomCode();
         var game = _gameService.GetGame(roomCode);
-        if (game is null || Context.ConnectionId != game.Admin.ConnectionId)
+        if (game is null)
+        {
+            _logger.LogError("StartGame(): Game with roomcode: {RoomCode} is null", roomCode);
             return;
+        }
+        var adminConnectionId = game.Admin.ConnectionId;
+        if (Context.ConnectionId != adminConnectionId)
+        {
+            _logger.LogError("StartGame(): Non-admin user: {ContextConnectionId} tried to start game in room {RoomCode}, where admin connectionId is {AdminConnectionId}", Context.ConnectionId, roomCode, adminConnectionId);
+            return;
+        }
 
-        var a = Clients.Group(roomCode);
-        await Clients.Group(roomCode).SendAsync("GameStarted", game.Questions[game.CurrentQuestionIndex]);
+        await Clients.Group(roomCode).SendAsync("GameStarted", game.CurrentQuestion);
     }
 
-    public async Task EndRound() // Should only be called from admin. And only as a possible override
+    public async Task EndRound()
     {
         var roomCode = GetRoomCode();
         var game = _gameService.GetGame(roomCode);
@@ -62,8 +70,10 @@ public class QuizHub : Hub
         }
         _logger.LogInformation("Manual End Round");
         
-        await Clients.Group(roomCode)
-            .SendAsync("RoundEnded");
+        foreach (var player in game.Players)
+        {
+            await Clients.Client(player.ConnectionId).SendAsync("EndRound", game.GetCorrectAnswers(), game.GetCorrectness(player), player.Score); //answerDistribution too
+        }
     }
 
     public async Task NextQuestion()
@@ -71,29 +81,47 @@ public class QuizHub : Hub
         _logger.LogInformation("NextQuestion");
         var roomCode = GetRoomCode();
         var game = _gameService.GetGame(roomCode);
-        if (game is null || Context.ConnectionId != game.Admin.ConnectionId)
-            return;
-
-        game.PlayersAnsweredCount = 0;
-        if (game.CurrentQuestionIndex < game.Questions.Count - 1)
+        if (game is null)
         {
-            game.CurrentQuestionIndex++;
+            _logger.LogError("NextQuestion(): Game with roomcode: {RoomCode} is null", roomCode);
+            return;
+        }
+        var adminConnectionId = game.Admin.ConnectionId;
+        if (Context.ConnectionId != adminConnectionId)
+        {
+            _logger.LogError("NextQuestion(): Non-admin user: {ContextConnectionId} tried to advance question in room {RoomCode}, where admin connectionId is {AdminConnectionId}", Context.ConnectionId, roomCode, adminConnectionId);
+            return;
+        }
+        
+        if (!game.AdvanceQuestion())
+        {
+            _logger.LogInformation("NextQuestion(): Tried to advance question, but no more questions left.");
+            return;
         }
 
-        await Clients.Group(roomCode)
-            .SendAsync("ReceiveQuestion", game.Questions[game.CurrentQuestionIndex]);
+        await Clients.Group(roomCode).SendAsync("ReceiveQuestion", game.CurrentQuestion);
     }
 
-    public async Task SubmitAnswer(string playerName, string answer)
+    public async Task SubmitAnswer(string playerName, object answer)
     {
         _logger.LogInformation("Player {PlayerName} submitted answer: {answer}", playerName, answer);
-        await Clients.Caller.SendAsync("AnswerReceived");
-        var game = _gameService.GetGame(GetRoomCode());
+        var roomCode = GetRoomCode();
+        var game = _gameService.GetGame(roomCode);
         if (game is null)
+        {
+            _logger.LogError("SubmitAnswer(): Game with roomcode: {RoomCode} is null", roomCode);
             return;
+        }
 
-        var newCount = game.IncrementPlayersAnsweredCount();
-        await Clients.Group(GetRoomCode()).SendAsync("UpdatePlayersAnsweredCounter", newCount);
+        var player = game.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
+        if (player is null)
+        {
+            _logger.LogError("SubmitAnswer(): Player with connectionId: {ConnectionId} not found in game with roomcode: {RoomCode}", Context.ConnectionId, roomCode);
+            return;
+        }
+        var newCount = game.PlayerAnswered(player, answer);
+        await Clients.Caller.SendAsync("AnswerReceived");
+        await Clients.Group(roomCode).SendAsync("UpdatePlayersAnsweredCounter", newCount);
     }
 
     public async Task BroadcastLeaderboard(object leaderboard)

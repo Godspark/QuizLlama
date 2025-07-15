@@ -6,7 +6,7 @@ public class TypeAnswerQuestion : Question
 
     public bool MustBeExact { get; set; } = false;
 
-    public override bool CheckAnswer(object answer)
+    public override Correctness CheckAnswer(object answer)
     {
         if (answer is not string answerString)
         {
@@ -15,10 +15,12 @@ public class TypeAnswerQuestion : Question
         
         if (MustBeExact)
         {
-            return CorrectAnswers.Contains(answerString);
+            return CorrectAnswers.Contains(answerString) ? Correctness.Correct : Correctness.Incorrect;
         }
         
         return CorrectAnswers.Any(correctAnswer => 
-            answerString.Equals(correctAnswer, StringComparison.OrdinalIgnoreCase));
+            answerString.Equals(correctAnswer, StringComparison.OrdinalIgnoreCase)) 
+            ? Correctness.Correct 
+            : Correctness.Incorrect;
     }
 }

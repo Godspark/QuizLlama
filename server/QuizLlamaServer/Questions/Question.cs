@@ -11,8 +11,8 @@ public abstract class Question
     public int CategoryId { get; set; }
     public int Difficulty { get; set; }
 
-    public virtual bool CheckAnswer(object answer)
+    public virtual Correctness CheckAnswer(object answer)
     {
-        return false;
+        return Correctness.NotAnswered;
     }
 }
