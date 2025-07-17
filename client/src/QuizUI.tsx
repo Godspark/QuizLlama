@@ -5,7 +5,7 @@ interface QuizUIProps {
   question: string;
   options: string[];
   type: QuestionType;
-  onAnswerSelect: (answer: string) => void;
+  onAnswerSelect: (answer: number) => void;
 }
 
 const QuizUI: React.FC<QuizUIProps> = ({
@@ -24,7 +24,7 @@ const QuizUI: React.FC<QuizUIProps> = ({
           <button
             key={index}
             className="option-button"
-            onClick={() => onAnswerSelect(option)}
+            onClick={() => onAnswerSelect(index)}
           >
             {option}
           </button>

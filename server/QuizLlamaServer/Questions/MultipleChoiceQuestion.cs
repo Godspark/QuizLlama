@@ -1,3 +1,5 @@
+using QuizLlamaServer.Answers;
+
 namespace QuizLlamaServer.Questions;
 
 public class MultipleChoiceQuestion : Question
@@ -7,15 +9,20 @@ public class MultipleChoiceQuestion : Question
 
     public override Correctness CheckAnswer(object answer)
     {
-        if (answer is not int answerInt)
+        int intAnswer;
+        try
+        {
+            intAnswer = (int)answer;
+        }
+        catch (Exception e)
         {
             throw new ArgumentException("Answer must be an integer.", nameof(answer));
         }
-        if (answerInt > Alternatives.Count || answerInt < 0)
+        if (intAnswer > Alternatives.Count || intAnswer < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(answer), "Answer must be a valid index of an alternative.");
         }
         
-        return CorrectAlternativeIndices.Contains(answerInt) ? Correctness.Correct : Correctness.Incorrect;
+        return CorrectAlternativeIndices.Contains(intAnswer) ? Correctness.Correct : Correctness.Incorrect;
     }
 }

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace QuizLlamaServer.Questions;
+namespace QuizLlamaServer.Answers;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Correctness

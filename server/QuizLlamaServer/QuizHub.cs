@@ -72,7 +72,7 @@ public class QuizHub : Hub
         
         foreach (var player in game.Players)
         {
-            await Clients.Client(player.ConnectionId).SendAsync("EndRound", game.GetCorrectAnswers(), game.GetCorrectness(player), player.Score); //answerDistribution too
+            await Clients.Client(player.ConnectionId).SendAsync("RoundEnded", game.GetCorrectAnswers(), game.GetCorrectness(player), player.Score); //answerDistribution too
         }
     }
 
