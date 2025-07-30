@@ -9,6 +9,7 @@ import type {
   Question,
   TrueFalseQuestion,
   TypeAnswerQuestion,
+  Answer,
 } from "./api/Types";
 import { QuestionType, Correctness } from "./api/Types";
 
@@ -23,6 +24,7 @@ const App: React.FC = () => {
   const [correctness, setCorrectness] = useState<Correctness | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState("");
   const [score, setScore] = useState(0);
+  const [nickname, setNickname] = useState("");
 
   const handleReceiveQuestion = (question: Question) => {
     setHasAnswered(false);
@@ -122,6 +124,7 @@ const App: React.FC = () => {
 
   const joinGame = (roomcode: string, nickname: string) => {
     console.log("Joining game");
+    setNickname(nickname);
     try {
       if (!connection) {
         console.error("Connection is not established.");
@@ -133,14 +136,14 @@ const App: React.FC = () => {
     }
   };
   
-  const handleAnswerSelect = (answer: number) => {
+  const handleAnswerSelect = (answer: Answer) => {
     console.log("Selected answer:", answer);
     try {
       if (!connection) {
         console.error("Connection is not established.");
         return;
       }
-      connection.invoke("SubmitAnswer", "player", answer);
+      connection.invoke("SubmitAnswer", nickname, answer);
     } catch (err) {
       console.error("SignalR error:", err);
     }

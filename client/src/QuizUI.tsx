@@ -1,11 +1,11 @@
 import React from "react";
-import { QuestionType } from "./api/Types";
+import {QuestionType, type MultipleChoiceAnswer, type Answer} from "./api/Types";
 
 interface QuizUIProps {
   question: string;
   options: string[];
   type: QuestionType;
-  onAnswerSelect: (answer: number) => void;
+  onAnswerSelect: (answer: Answer) => void;
 }
 
 const QuizUI: React.FC<QuizUIProps> = ({
@@ -24,7 +24,10 @@ const QuizUI: React.FC<QuizUIProps> = ({
           <button
             key={index}
             className="option-button"
-            onClick={() => onAnswerSelect(index)}
+            onClick={() => {
+              const answer: MultipleChoiceAnswer = { selectedAlternativeIndex: index };
+              onAnswerSelect(answer)
+            }}
           >
             {option}
           </button>

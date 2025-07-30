@@ -14,8 +14,13 @@ public class QuestionsController : ControllerBase
         new TrueFalseQuestion(),
         new TypeAnswerQuestion()
     };
-
-    public static Answer Answer = new();
+    
+    private static readonly List<Answer> Answers = new()
+    {
+        new MultipleChoiceAnswer(),
+        new TrueFalseAnswer(),
+        new TypeAnswerAnswer()
+    };
 
     private static readonly List<Correctness> Correctnesses = new()
     {
@@ -29,6 +34,12 @@ public class QuestionsController : ControllerBase
     public ActionResult<IEnumerable<Question>> GetQuestions()
     {
         return Ok(Questions);
+    }
+    
+    [HttpGet("answers")]
+    public ActionResult<IEnumerable<Answer>> GetAnswers()
+    {
+        return Ok(Answers);
     }
     
     [HttpGet("correctnesses")]

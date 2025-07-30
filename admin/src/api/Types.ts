@@ -16,6 +16,23 @@ export enum QuestionType {
   TypeAnswer = "TypeAnswer",
 }
 
+export enum Correctness {
+  Correct = "Correct",
+  Incorrect = "Incorrect",
+  PartiallyCorrect = "PartiallyCorrect",
+  NotAnswered = "NotAnswered",
+}
+
+export interface Answer {
+  question?:
+    | MultipleChoiceQuestion
+    | TrueFalseQuestion
+    | TypeAnswerQuestion
+    | null;
+  player?: Player;
+  correctness?: Correctness;
+}
+
 export interface MultipleChoiceAlternative {
   text?: string | null;
   imageUrl?: string | null;
@@ -23,10 +40,24 @@ export interface MultipleChoiceAlternative {
   index?: number;
 }
 
+export type MultipleChoiceAnswer = Answer & {
+  /** @format int32 */
+  selectedAlternativeIndex?: number;
+};
+
 export type MultipleChoiceQuestion = Question & {
   alternatives?: MultipleChoiceAlternative[] | null;
   correctAlternativeIndices?: number[] | null;
 };
+
+export interface Player {
+  nickname?: string | null;
+  connectionId?: string | null;
+  /** @format int32 */
+  score?: number;
+  /** @format int32 */
+  correctAnswers?: number;
+}
 
 export interface Question {
   /** @format uuid */
@@ -41,8 +72,16 @@ export interface Question {
   difficulty?: number;
 }
 
+export type TrueFalseAnswer = Answer & {
+  selectedAnswer?: boolean;
+};
+
 export type TrueFalseQuestion = Question & {
   correctAnswer?: boolean;
+};
+
+export type TypeAnswerAnswer = Answer & {
+  answerText?: string | null;
 };
 
 export type TypeAnswerQuestion = Question & {
@@ -311,15 +350,48 @@ export class Api<
      * No description
      *
      * @tags Questions
-     * @name QuestionsList
-     * @request GET:/api/Questions
+     * @name QuestionsQuestionsList
+     * @request GET:/api/Questions/questions
      */
-    questionsList: (params: RequestParams = {}) =>
+    questionsQuestionsList: (params: RequestParams = {}) =>
       this.request<
         (MultipleChoiceQuestion | TrueFalseQuestion | TypeAnswerQuestion)[],
         any
       >({
-        path: `/api/Questions`,
+        path: `/api/Questions/questions`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name QuestionsAnswersList
+     * @request GET:/api/Questions/answers
+     */
+    questionsAnswersList: (params: RequestParams = {}) =>
+      this.request<
+        (MultipleChoiceAnswer | TrueFalseAnswer | TypeAnswerAnswer)[],
+        any
+      >({
+        path: `/api/Questions/answers`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name QuestionsCorrectnessesList
+     * @request GET:/api/Questions/correctnesses
+     */
+    questionsCorrectnessesList: (params: RequestParams = {}) =>
+      this.request<Correctness[], any>({
+        path: `/api/Questions/correctnesses`,
         method: "GET",
         format: "json",
         ...params,

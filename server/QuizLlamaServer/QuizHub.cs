@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using QuizLlamaServer.Answers;
 
 namespace QuizLlamaServer;
 
@@ -102,7 +103,7 @@ public class QuizHub : Hub
         await Clients.Group(roomCode).SendAsync("ReceiveQuestion", game.CurrentQuestion);
     }
 
-    public async Task SubmitAnswer(string playerName, object answer)
+    public async Task SubmitAnswer(string playerName, Answer answer)
     {
         _logger.LogInformation("Player {PlayerName} submitted answer: {answer}", playerName, answer);
         var roomCode = GetRoomCode();
@@ -119,7 +120,18 @@ public class QuizHub : Hub
             _logger.LogError("SubmitAnswer(): Player with connectionId: {ConnectionId} not found in game with roomcode: {RoomCode}", Context.ConnectionId, roomCode);
             return;
         }
-        var newCount = game.PlayerAnswered(player, answer);
+
+        int newCount;
+        try
+        {
+            newCount = game.PlayerAnswered(player, answer);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "SubmitAnswer(): Failed to answer question");
+            return;
+        }
+        
         await Clients.Caller.SendAsync("AnswerReceived");
         await Clients.Group(roomCode).SendAsync("UpdatePlayersAnsweredCounter", newCount);
     }
