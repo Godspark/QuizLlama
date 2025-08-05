@@ -103,9 +103,9 @@ public class QuizHub : Hub
         await Clients.Group(roomCode).SendAsync("ReceiveQuestion", game.CurrentQuestion);
     }
 
-    public async Task SubmitAnswer(string playerName, Answer answer)
+    public async Task SubmitAnswer(string nickname, Answer answer)
     {
-        _logger.LogInformation("Player {PlayerName} submitted answer: {answer}", playerName, answer);
+        _logger.LogInformation("Player {nickname} submitted answer: {answer}", nickname, answer);
         var roomCode = GetRoomCode();
         var game = _gameService.GetGame(roomCode);
         if (game is null)

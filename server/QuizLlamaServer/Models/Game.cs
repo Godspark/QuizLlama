@@ -75,7 +75,8 @@ public class Game
 
     public Correctness GetCorrectness(Player player)
     {
-        return Answers.First(x => x.Player == player && x.Question == CurrentQuestion).Correctness;
+        var answer = Answers.FirstOrDefault(x => x.Player == player && x.Question == CurrentQuestion);
+        return answer?.Correctness ?? Correctness.NotAnswered;
     }
 
     public object GetCorrectAnswers()
