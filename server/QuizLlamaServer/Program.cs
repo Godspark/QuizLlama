@@ -16,13 +16,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSignalR()
-    .AddJsonProtocol(options =>
-    {
-        options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.PayloadSerializerOptions.TypeInfoResolver =
-            new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver();
-    });
+builder.Services.AddSignalR();
 builder.Services.AddSingleton<GameService, GameService>();
 
 // Add Swagger services

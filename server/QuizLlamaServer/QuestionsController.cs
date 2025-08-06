@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using QuizLlamaServer.Answers;
+using QuizLlamaServer.Guesses;
 using QuizLlamaServer.Questions;
 
 namespace QuizLlamaServer;
@@ -13,13 +14,6 @@ public class QuestionsController : ControllerBase
         new MultipleChoiceQuestion(),
         new TrueFalseQuestion(),
         new TypeAnswerQuestion()
-    };
-    
-    private static readonly List<Answer> Answers = new()
-    {
-        new MultipleChoiceAnswer(),
-        new TrueFalseAnswer(),
-        new TypeAnswerAnswer()
     };
 
     private static readonly List<Correctness> Correctnesses = new()
@@ -36,10 +30,10 @@ public class QuestionsController : ControllerBase
         return Ok(Questions);
     }
     
-    [HttpGet("answers")]
-    public ActionResult<IEnumerable<Answer>> GetAnswers()
+    [HttpGet("guess")]
+    public ActionResult<Guess> GetGuess()
     {
-        return Ok(Answers);
+        return Ok(new Guess());
     }
     
     [HttpGet("correctnesses")]

@@ -4,12 +4,12 @@ import QuizUI from "./QuizUI";
 import Login from "./connection/Login";
 import "./App.css";
 import type {
+  Guess,
   MultipleChoiceAlternative,
   MultipleChoiceQuestion,
   Question,
   TrueFalseQuestion,
-  TypeAnswerQuestion,
-  Answer,
+  TypeAnswerQuestion
 } from "./api/Types";
 import { QuestionType, Correctness } from "./api/Types";
 
@@ -24,7 +24,6 @@ const App: React.FC = () => {
   const [correctness, setCorrectness] = useState<Correctness | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState("");
   const [score, setScore] = useState(0);
-  const [nickname, setNickname] = useState("");
 
   const handleReceiveQuestion = (question: Question) => {
     setHasAnswered(false);
@@ -124,7 +123,6 @@ const App: React.FC = () => {
 
   const joinGame = (roomcode: string, nickname: string) => {
     console.log("Joining game");
-    setNickname(nickname);
     try {
       if (!connection) {
         console.error("Connection is not established.");
@@ -136,14 +134,14 @@ const App: React.FC = () => {
     }
   };
   
-  const handleAnswerSelect = (answer: Answer) => {
-    console.log("Selected answer:", answer);
+  const handleAnswerSelect = (guess: Guess) => {
+    console.log("Selected guess:", guess);
     try {
       if (!connection) {
         console.error("Connection is not established.");
         return;
       }
-      connection.invoke("SubmitAnswer", nickname, answer);
+      connection.invoke("SubmitAnswer", guess);
     } catch (err) {
       console.error("SignalR error:", err);
     }

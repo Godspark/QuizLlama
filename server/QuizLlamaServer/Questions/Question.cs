@@ -1,4 +1,5 @@
 using QuizLlamaServer.Answers;
+using QuizLlamaServer.Guesses;
 
 namespace QuizLlamaServer.Questions;
 
@@ -13,7 +14,7 @@ public abstract class Question
     public int CategoryId { get; set; }
     public int Difficulty { get; set; }
 
-    public virtual Correctness CheckAnswer(object answer)
+    public virtual Correctness CheckAnswer(Guess guess)
     {
         return Correctness.NotAnswered;
     }

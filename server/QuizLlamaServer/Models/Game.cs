@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using QuizLlamaServer.Answers;
+using QuizLlamaServer.Guesses;
 using QuizLlamaServer.Questions;
 using QuizLlamaServer.Users;
 
@@ -61,14 +62,14 @@ public class Game
         return Players.Any(x => x.Nickname == nickname);
     }
     
-    public int PlayerAnswered(Player player, Answer answer)
+    public int PlayerAnswered(Player player, Guess guess)
     {
-        if (answer.Question.QuestionId != CurrentQuestion.QuestionId)
+        var answer = new Answer
         {
-            throw new ArgumentException("Answer must be for the current question.", nameof(answer));
-        }
-        answer.Player = player;
-        answer.Correctness = CurrentQuestion.CheckAnswer(answer);
+            Question = CurrentQuestion,
+            Player = player,
+            Correctness = CurrentQuestion.CheckAnswer(guess)
+        };
         Answers.Add(answer);
         return Interlocked.Increment(ref _playersAnsweredCount);
     }

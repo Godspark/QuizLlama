@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using QuizLlamaServer.Answers;
+using QuizLlamaServer.Guesses;
 
 namespace QuizLlamaServer;
 
@@ -103,9 +104,9 @@ public class QuizHub : Hub
         await Clients.Group(roomCode).SendAsync("ReceiveQuestion", game.CurrentQuestion);
     }
 
-    public async Task SubmitAnswer(string nickname, Answer answer)
+    public async Task SubmitAnswer(Guess guess)
     {
-        _logger.LogInformation("Player {nickname} submitted answer: {answer}", nickname, answer);
+        _logger.LogInformation("Player {Context.ConnectionId} submitted answer: {guess}", Context.ConnectionId, guess);
         var roomCode = GetRoomCode();
         var game = _gameService.GetGame(roomCode);
         if (game is null)
@@ -124,7 +125,7 @@ public class QuizHub : Hub
         int newCount;
         try
         {
-            newCount = game.PlayerAnswered(player, answer);
+            newCount = game.PlayerAnswered(player, guess);
         }
         catch (Exception e)
         {

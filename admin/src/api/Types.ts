@@ -23,14 +23,11 @@ export enum Correctness {
   NotAnswered = "NotAnswered",
 }
 
-export interface Answer {
-  question?:
-    | MultipleChoiceQuestion
-    | TrueFalseQuestion
-    | TypeAnswerQuestion
-    | null;
-  player?: Player;
-  correctness?: Correctness;
+export interface Guess {
+  /** @format int32 */
+  multipleChoiceIndex?: number | null;
+  trueFalse?: boolean | null;
+  typeAnswerText?: string | null;
 }
 
 export interface MultipleChoiceAlternative {
@@ -40,24 +37,10 @@ export interface MultipleChoiceAlternative {
   index?: number;
 }
 
-export type MultipleChoiceAnswer = Answer & {
-  /** @format int32 */
-  selectedAlternativeIndex?: number;
-};
-
 export type MultipleChoiceQuestion = Question & {
   alternatives?: MultipleChoiceAlternative[] | null;
   correctAlternativeIndices?: number[] | null;
 };
-
-export interface Player {
-  nickname?: string | null;
-  connectionId?: string | null;
-  /** @format int32 */
-  score?: number;
-  /** @format int32 */
-  correctAnswers?: number;
-}
 
 export interface Question {
   /** @format uuid */
@@ -72,16 +55,8 @@ export interface Question {
   difficulty?: number;
 }
 
-export type TrueFalseAnswer = Answer & {
-  selectedAnswer?: boolean;
-};
-
 export type TrueFalseQuestion = Question & {
   correctAnswer?: boolean;
-};
-
-export type TypeAnswerAnswer = Answer & {
-  answerText?: string | null;
 };
 
 export type TypeAnswerQuestion = Question & {
@@ -368,15 +343,12 @@ export class Api<
      * No description
      *
      * @tags Questions
-     * @name QuestionsAnswersList
-     * @request GET:/api/Questions/answers
+     * @name QuestionsGuessList
+     * @request GET:/api/Questions/guess
      */
-    questionsAnswersList: (params: RequestParams = {}) =>
-      this.request<
-        (MultipleChoiceAnswer | TrueFalseAnswer | TypeAnswerAnswer)[],
-        any
-      >({
-        path: `/api/Questions/answers`,
+    questionsGuessList: (params: RequestParams = {}) =>
+      this.request<Guess, any>({
+        path: `/api/Questions/guess`,
         method: "GET",
         format: "json",
         ...params,

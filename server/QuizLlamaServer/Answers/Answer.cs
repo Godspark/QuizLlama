@@ -1,21 +1,17 @@
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using QuizLlamaServer.Questions;
 using QuizLlamaServer.Users;
 
 namespace QuizLlamaServer.Answers;
 
-[JsonPolymorphic]
-[JsonDerivedType(typeof(MultipleChoiceAnswer), nameof(MultipleChoiceAnswer))]
-[JsonDerivedType(typeof(TypeAnswerAnswer), nameof(TypeAnswerAnswer))]
-[JsonDerivedType(typeof(TrueFalseAnswer), nameof(TrueFalseAnswer))]
-public abstract class Answer
+public class Answer
 {
-    public Question Question { get; set; }
+    public required Question Question { get; init; }
     
-    [BindNever]
-    public Player Player { get; set; }
+    public required Player Player { get; init; }
     
-    [BindNever]
     public Correctness Correctness { get; set; }
+    
+    public int MultipleChoiceIndex { get; set; }
+    public bool TrueFalse { get; set; }
+    public string TypeAnswerText { get; set; } = string.Empty;
 }
