@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.OpenApi.Models;
 using QuizLlamaServer;
 
@@ -15,7 +16,13 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.PayloadSerializerOptions.TypeInfoResolver =
+            new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver();
+    });
 builder.Services.AddSingleton<GameService, GameService>();
 
 // Add Swagger services
