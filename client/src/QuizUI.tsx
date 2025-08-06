@@ -1,11 +1,11 @@
 import React from "react";
-import { QuestionType } from "./api/Types";
+import {type Guess, QuestionType} from "./api/Types";
 
 interface QuizUIProps {
   question: string;
   options: string[];
   type: QuestionType;
-  onAnswerSelect: (answer: string) => void;
+  onAnswerSelect: (guess: Guess) => void;
 }
 
 const QuizUI: React.FC<QuizUIProps> = ({
@@ -24,7 +24,10 @@ const QuizUI: React.FC<QuizUIProps> = ({
           <button
             key={index}
             className="option-button"
-            onClick={() => onAnswerSelect(option)}
+            onClick={() => {
+              const guess: Guess = { multipleChoiceIndex: index };
+              onAnswerSelect(guess)
+            }}
           >
             {option}
           </button>

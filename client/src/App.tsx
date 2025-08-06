@@ -4,13 +4,14 @@ import QuizUI from "./QuizUI";
 import Login from "./connection/Login";
 import "./App.css";
 import type {
+  Guess,
   MultipleChoiceAlternative,
   MultipleChoiceQuestion,
   Question,
   TrueFalseQuestion,
-  TypeAnswerQuestion,
+  TypeAnswerQuestion
 } from "./api/Types";
-import { QuestionType } from "./api/Types";
+import { QuestionType, Correctness } from "./api/Types";
 
 const App: React.FC = () => {
   const [connection, setConnection] = useState<HubConnection | null>(null);
@@ -19,7 +20,10 @@ const App: React.FC = () => {
   const [options, setOptions] = useState<string[]>([]);
   const [type, setType] = useState<QuestionType | undefined>(undefined);
   const [hasAnswered, setHasAnswered] = useState(false);
-  const [showRoundResults, setShowRoundResults] = useState(false);  
+  const [showRoundResults, setShowRoundResults] = useState(false);
+  const [correctness, setCorrectness] = useState<Correctness | null>(null);
+  const [correctAnswers, setCorrectAnswers] = useState("");
+  const [score, setScore] = useState(0);
 
   const handleReceiveQuestion = (question: Question) => {
     setHasAnswered(false);
@@ -109,7 +113,10 @@ const App: React.FC = () => {
     if (!connection) {
       return;
     }
-    connection.on("RoundEnded", () => {
+    connection.on("RoundEnded", (correctAnswers: object, correctness: Correctness, score: number) => {
+      setCorrectAnswers(correctAnswers.toString());
+      setCorrectness(correctness);
+      setScore(score);
       setShowRoundResults(true);
     });
   }, [connection]);
@@ -127,21 +134,26 @@ const App: React.FC = () => {
     }
   };
   
-  const handleAnswerSelect = (answer: string) => {
-    console.log("Selected answer:", answer);
+  const handleAnswerSelect = (guess: Guess) => {
+    console.log("Selected guess:", guess);
     try {
       if (!connection) {
         console.error("Connection is not established.");
         return;
       }
-      connection.invoke("SubmitAnswer", "player", answer);
+      connection.invoke("SubmitAnswer", guess);
     } catch (err) {
       console.error("SignalR error:", err);
     }
   };
 
   if (showRoundResults) {
-    return <div>Round results will be displayed here.</div>;
+    return (
+    <div>
+      <p>Correctness: {correctness}</p>
+      <p>Correct answer(s): {correctAnswers}</p>
+      <p>Score: {score}</p>
+    </div>);
   }
   if (hasAnswered) {
     return <div>I hope it was the right answer!</div>

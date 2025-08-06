@@ -1,21 +1,22 @@
+using QuizLlamaServer.Answers;
+using QuizLlamaServer.Guesses;
+
 namespace QuizLlamaServer.Questions;
 
 public class MultipleChoiceQuestion : Question
 {
-    public List<MultipleChoiceAlternative> Alternatives { get; set; } = new();
-    public List<int> CorrectAlternativeIndices { get; set; } = new();
+    public List<MultipleChoiceAlternative> Alternatives { get; init; } = new();
+    public List<int> CorrectAlternativeIndices { get; init; } = new();
 
-    public override bool CheckAnswer(object answer)
+    public override Correctness CheckAnswer(Guess guess)
     {
-        if (answer is not int answerInt)
+        if (guess.MultipleChoiceIndex == null 
+            || guess.MultipleChoiceIndex < 1 
+            || guess.MultipleChoiceIndex > Alternatives.Count)
         {
-            throw new ArgumentException("Answer must be an integer.", nameof(answer));
-        }
-        if (answerInt > Alternatives.Count || answerInt < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(answer), "Answer must be a valid index of an alternative.");
+            return Correctness.NotAnswered;
         }
         
-        return CorrectAlternativeIndices.Contains(answerInt);
+        return CorrectAlternativeIndices.Contains(guess.MultipleChoiceIndex.Value) ? Correctness.Correct : Correctness.Incorrect;
     }
 }

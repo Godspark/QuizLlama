@@ -1,3 +1,6 @@
+using QuizLlamaServer.Answers;
+using QuizLlamaServer.Guesses;
+
 namespace QuizLlamaServer.Questions;
 
 public class TrueFalseQuestion : Question
@@ -9,13 +12,13 @@ public class TrueFalseQuestion : Question
         QuestionType = QuestionType.TrueFalse;
     }
     
-    public override bool CheckAnswer(object answer)
+    public override Correctness CheckAnswer(Guess guess)
     {
-        if (answer is not bool answerBool)
+        if (guess.TrueFalse == null)
         {
-            throw new ArgumentException("Answer must be a boolean.", nameof(answer));
+            return Correctness.NotAnswered;
         }
         
-        return answerBool == CorrectAnswer;
+        return guess.TrueFalse == CorrectAnswer ? Correctness.Correct : Correctness.Incorrect;
     }
 }

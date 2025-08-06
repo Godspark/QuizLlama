@@ -16,6 +16,20 @@ export enum QuestionType {
   TypeAnswer = "TypeAnswer",
 }
 
+export enum Correctness {
+  Correct = "Correct",
+  Incorrect = "Incorrect",
+  PartiallyCorrect = "PartiallyCorrect",
+  NotAnswered = "NotAnswered",
+}
+
+export interface Guess {
+  /** @format int32 */
+  multipleChoiceIndex?: number | null;
+  trueFalse?: boolean | null;
+  typeAnswerText?: string | null;
+}
+
 export interface MultipleChoiceAlternative {
   text?: string | null;
   imageUrl?: string | null;
@@ -311,15 +325,45 @@ export class Api<
      * No description
      *
      * @tags Questions
-     * @name QuestionsList
-     * @request GET:/api/Questions
+     * @name QuestionsQuestionsList
+     * @request GET:/api/Questions/questions
      */
-    questionsList: (params: RequestParams = {}) =>
+    questionsQuestionsList: (params: RequestParams = {}) =>
       this.request<
         (MultipleChoiceQuestion | TrueFalseQuestion | TypeAnswerQuestion)[],
         any
       >({
-        path: `/api/Questions`,
+        path: `/api/Questions/questions`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name QuestionsGuessList
+     * @request GET:/api/Questions/guess
+     */
+    questionsGuessList: (params: RequestParams = {}) =>
+      this.request<Guess, any>({
+        path: `/api/Questions/guess`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name QuestionsCorrectnessesList
+     * @request GET:/api/Questions/correctnesses
+     */
+    questionsCorrectnessesList: (params: RequestParams = {}) =>
+      this.request<Correctness[], any>({
+        path: `/api/Questions/correctnesses`,
         method: "GET",
         format: "json",
         ...params,

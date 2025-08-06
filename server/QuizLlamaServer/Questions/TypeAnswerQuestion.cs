@@ -1,3 +1,6 @@
+using QuizLlamaServer.Answers;
+using QuizLlamaServer.Guesses;
+
 namespace QuizLlamaServer.Questions;
 
 public class TypeAnswerQuestion : Question
@@ -6,19 +9,21 @@ public class TypeAnswerQuestion : Question
 
     public bool MustBeExact { get; set; } = false;
 
-    public override bool CheckAnswer(object answer)
+    public override Correctness CheckAnswer(Guess guess)
     {
-        if (answer is not string answerString)
+        if (guess.TypeAnswerText == null)
         {
-            throw new ArgumentException("Answer must be a string.", nameof(answer));
+            return Correctness.NotAnswered;
         }
-        
+
         if (MustBeExact)
         {
-            return CorrectAnswers.Contains(answerString);
+            return CorrectAnswers.Contains(guess.TypeAnswerText) ? Correctness.Correct : Correctness.Incorrect;
         }
         
         return CorrectAnswers.Any(correctAnswer => 
-            answerString.Equals(correctAnswer, StringComparison.OrdinalIgnoreCase));
+            guess.TypeAnswerText.Equals(correctAnswer, StringComparison.OrdinalIgnoreCase)) 
+            ? Correctness.Correct 
+            : Correctness.Incorrect;
     }
 }
