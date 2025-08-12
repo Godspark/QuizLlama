@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using QuizLlamaServer.Answers;
+﻿using QuizLlamaServer.Answers;
 using QuizLlamaServer.Guesses;
 using QuizLlamaServer.Questions;
+using QuizLlamaServer.Solutions;
 using QuizLlamaServer.Users;
 
 namespace QuizLlamaServer.Models;
@@ -64,13 +64,16 @@ public class Game
     
     public int PlayerAnswered(Player player, Guess guess)
     {
+        var correctness = CurrentQuestion.CheckAnswer(guess);
         var answer = new Answer
         {
             Question = CurrentQuestion,
             Player = player,
-            Correctness = CurrentQuestion.CheckAnswer(guess)
+            Correctness = correctness,
+            PointsAwarded = correctness == Correctness.Correct ? CurrentQuestion.MaxPoints : 0
         };
         Answers.Add(answer);
+        player.Score += answer.PointsAwarded;
         return Interlocked.Increment(ref _playersAnsweredCount);
     }
 
@@ -80,15 +83,26 @@ public class Game
         return answer?.Correctness ?? Correctness.NotAnswered;
     }
 
-    public object GetCorrectAnswers()
+    public Solution GetCorrectAnswers()
     {
-        return CurrentQuestion.QuestionType switch
+        var solution = new Solution();
+
+        switch (CurrentQuestion.QuestionType)
         {
-            QuestionType.TrueFalse => ((TrueFalseQuestion)CurrentQuestion).CorrectAnswer,
-            QuestionType.TypeAnswer => ((TypeAnswerQuestion)CurrentQuestion).CorrectAnswers,
-            QuestionType.MultipleChoice => ((MultipleChoiceQuestion)CurrentQuestion).CorrectAlternativeIndices,
-            _ => throw new InvalidOperationException("Unsupported question type.")
-        };
+            case QuestionType.TrueFalse:
+                solution.TrueFalseSolution = ((TrueFalseQuestion)CurrentQuestion).CorrectAnswer;
+                break;
+            case QuestionType.TypeAnswer:
+                solution.TypeAnswerSolutions = ((TypeAnswerQuestion)CurrentQuestion).CorrectAnswers;
+                break;
+            case QuestionType.MultipleChoice:
+                solution.MultipleChoiceSolutionIndices = ((MultipleChoiceQuestion)CurrentQuestion).CorrectAlternativeIndices;
+                break;
+            default:
+                throw new InvalidOperationException("Unsupported question type.");
+        }
+        
+        return solution;
     }
     
     // public object GetAnswerDistribution()

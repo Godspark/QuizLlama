@@ -13,6 +13,7 @@ public abstract class Question
     
     public int CategoryId { get; set; }
     public int Difficulty { get; set; }
+    public int MaxPoints { get; set; }
 
     public virtual Correctness CheckAnswer(Guess guess)
     {

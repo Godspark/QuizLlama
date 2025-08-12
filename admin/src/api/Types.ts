@@ -53,6 +53,14 @@ export interface Question {
   categoryId?: number;
   /** @format int32 */
   difficulty?: number;
+  /** @format int32 */
+  maxPoints?: number;
+}
+
+export interface Solution {
+  multipleChoiceSolutionIndices?: number[] | null;
+  trueFalseSolution?: boolean | null;
+  typeAnswerSolutions?: string[] | null;
 }
 
 export type TrueFalseQuestion = Question & {
@@ -349,6 +357,21 @@ export class Api<
     questionsGuessList: (params: RequestParams = {}) =>
       this.request<Guess, any>({
         path: `/api/Questions/guess`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name QuestionsSolutionList
+     * @request GET:/api/Questions/solution
+     */
+    questionsSolutionList: (params: RequestParams = {}) =>
+      this.request<Solution, any>({
+        path: `/api/Questions/solution`,
         method: "GET",
         format: "json",
         ...params,

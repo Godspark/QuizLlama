@@ -7,7 +7,8 @@ import type {
   Guess,
   MultipleChoiceAlternative,
   MultipleChoiceQuestion,
-  Question,
+  Question, 
+  Solution,
   TrueFalseQuestion,
   TypeAnswerQuestion
 } from "./api/Types";
@@ -113,8 +114,13 @@ const App: React.FC = () => {
     if (!connection) {
       return;
     }
-    connection.on("RoundEnded", (correctAnswers: object, correctness: Correctness, score: number) => {
-      setCorrectAnswers(correctAnswers.toString());
+    connection.on("RoundEnded", (correctAnswers: Solution, correctness: Correctness, score: number) => {
+      console.log(correctAnswers.multipleChoiceSolutionIndices);
+      setCorrectAnswers(
+          correctAnswers.multipleChoiceSolutionIndices
+          ? correctAnswers.multipleChoiceSolutionIndices.join(", ")
+          : ""
+      );
       setCorrectness(correctness);
       setScore(score);
       setShowRoundResults(true);

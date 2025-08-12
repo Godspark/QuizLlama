@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using QuizLlamaServer.Answers;
 using QuizLlamaServer.Guesses;
 using QuizLlamaServer.Questions;
+using QuizLlamaServer.Solutions;
 
 namespace QuizLlamaServer;
 
@@ -34,6 +35,12 @@ public class QuestionsController : ControllerBase
     public ActionResult<Guess> GetGuess()
     {
         return Ok(new Guess());
+    }
+    
+    [HttpGet("solution")]
+    public ActionResult<Solution> GetSolution()
+    {
+        return Ok(new Solution());
     }
     
     [HttpGet("correctnesses")]

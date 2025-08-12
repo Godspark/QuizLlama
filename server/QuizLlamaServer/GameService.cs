@@ -32,6 +32,8 @@ public class GameService
                             new MultipleChoiceAlternative { Text = "Paris", Index = 2 },
                             new MultipleChoiceAlternative { Text = "Rome", Index = 3 }
                         ],
+                        CorrectAlternativeIndices = [2],
+                        MaxPoints = 1000
                     },
                     new TrueFalseQuestion
                     {
@@ -42,7 +44,8 @@ public class GameService
                         Explanation = "The Earth is an oblate spheroid, not flat.",
                         CategoryId = 2,
                         Difficulty = 1,
-                        CorrectAnswer = false
+                        CorrectAnswer = false,
+                        MaxPoints = 1000
                     },
                     new TypeAnswerQuestion
                     {
@@ -53,7 +56,8 @@ public class GameService
                         Explanation = "Jupiter is the largest planet in our solar system.",
                         CategoryId = 3,
                         Difficulty = 1,
-                        CorrectAnswers = { "Jupiter" }
+                        CorrectAnswers = { "Jupiter" },
+                        MaxPoints = 1000
                     }
                 ]
             }))

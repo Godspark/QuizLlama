@@ -11,6 +11,8 @@ public class Answer
     
     public Correctness Correctness { get; set; }
     
+    public int PointsAwarded { get; set; }
+    
     public int MultipleChoiceIndex { get; set; }
     public bool TrueFalse { get; set; }
     public string TypeAnswerText { get; set; } = string.Empty;
