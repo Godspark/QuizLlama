@@ -156,7 +156,7 @@ const App: React.FC = () => {
       return <QuestionDisplay question={currentQuestion} onEndRound={endRound} playersAnswered={playersAnsweredCounter} />;
   }
   if (showRoundResults) {
-    return <RoundResults onNextQuestion={nextQuestion} />;
+      return <RoundResults onNextQuestion={nextQuestion} />;
   }
   // if (showRoundLeaderboard) {
   //   return <Leaderboard />;

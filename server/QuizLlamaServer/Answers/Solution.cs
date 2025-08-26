@@ -1,4 +1,4 @@
-namespace QuizLlamaServer.Solutions;
+namespace QuizLlamaServer.Answers;
 
 public class Solution
 {

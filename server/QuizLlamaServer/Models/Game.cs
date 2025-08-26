@@ -1,7 +1,5 @@
 ﻿using QuizLlamaServer.Answers;
-using QuizLlamaServer.Guesses;
 using QuizLlamaServer.Questions;
-using QuizLlamaServer.Solutions;
 using QuizLlamaServer.Users;
 
 namespace QuizLlamaServer.Models;
@@ -99,20 +97,49 @@ public class Game
                 solution.MultipleChoiceSolutionIndices = ((MultipleChoiceQuestion)CurrentQuestion).CorrectAlternativeIndices;
                 break;
             default:
-                throw new InvalidOperationException("Unsupported question type.");
+                throw new InvalidOperationException("GetCorrectAnswers(): Unsupported question type.");
         }
         
         return solution;
     }
     
-    // public object GetAnswerDistribution()
-    // {
-    //     return CurrentQuestion.QuestionType switch
-    //     {
-    //         QuestionType.TrueFalse => ((TrueFalseQuestion)CurrentQuestion).CorrectAnswer,
-    //         QuestionType.TypeAnswer => ((TypeAnswerQuestion)CurrentQuestion).CorrectAnswers,
-    //         QuestionType.MultipleChoice => ((MultipleChoiceQuestion)CurrentQuestion).CorrectAlternativeIndices,
-    //         _ => throw new InvalidOperationException("Unsupported question type.")
-    //     };
-    // }
+    public AnswerDistribution GetAnswerDistribution()
+    {
+        var answerDistribution = new AnswerDistribution();
+        
+        switch (CurrentQuestion.QuestionType)
+        {
+            case QuestionType.TrueFalse:
+                answerDistribution.TrueFalseDistribution.Add(true, Answers.Count(a => a.TrueFalse));
+                answerDistribution.TrueFalseDistribution.Add(false, Answers.Count(a => !a.TrueFalse));
+                break;
+            case QuestionType.TypeAnswer:
+                foreach (var answer in Answers)
+                {
+                    if (!answerDistribution.TypeAnswerDistribution.TryAdd(answer.TypeAnswerText, 1))
+                    {
+                        answerDistribution.TypeAnswerDistribution[answer.TypeAnswerText]++;
+                    }
+                }
+                break;
+            case QuestionType.MultipleChoice:
+                foreach (var answer in Answers)
+                {
+                    if (!answerDistribution.MultipleChoiceDistribution.TryAdd(answer.MultipleChoiceIndex, 1))
+                    {
+                        answerDistribution.MultipleChoiceDistribution[answer.MultipleChoiceIndex]++;
+                    }
+                }
+                break;
+            default:
+                throw new InvalidOperationException("GetAnswerDistribution(): Unsupported question type.");
+        }
+
+        return answerDistribution;
+    }
+
+    public Scoreboard GetScoreboard()
+    {
+        return new Scoreboard();
+    }
 }

@@ -1,4 +1,4 @@
-namespace QuizLlamaServer.Guesses;
+namespace QuizLlamaServer.Answers;
 
 public class Guess
 {

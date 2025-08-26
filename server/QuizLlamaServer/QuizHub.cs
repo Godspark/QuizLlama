@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
 using QuizLlamaServer.Answers;
-using QuizLlamaServer.Guesses;
 
 namespace QuizLlamaServer;
 
@@ -72,10 +71,12 @@ public class QuizHub : Hub
         }
         _logger.LogInformation("Manual End Round");
         
+        var correctAnswers = game.GetCorrectAnswers();
         foreach (var player in game.Players)
         {
-            await Clients.Client(player.ConnectionId).SendAsync("RoundEnded", game.GetCorrectAnswers(), game.GetCorrectness(player), player.Score); //answerDistribution too
+            await Clients.Client(player.ConnectionId).SendAsync("RoundEnded", correctAnswers, game.GetCorrectness(player), player.Score); //answerDistribution too
         }
+        await Clients.Caller.SendAsync("RoundEnded", correctAnswers, game.GetAnswerDistribution(), game.GetScoreboard());
     }
 
     public async Task NextQuestion()

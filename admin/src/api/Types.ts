@@ -23,6 +23,12 @@ export enum Correctness {
   NotAnswered = "NotAnswered",
 }
 
+export interface AnswerDistribution {
+  multipleChoiceDistribution?: Record<string, number>;
+  trueFalseDistribution?: Record<string, number>;
+  typeAnswerDistribution?: Record<string, number>;
+}
+
 export interface Guess {
   /** @format int32 */
   multipleChoiceIndex?: number | null;
@@ -56,6 +62,8 @@ export interface Question {
   /** @format int32 */
   maxPoints?: number;
 }
+
+export type Scoreboard = object;
 
 export interface Solution {
   multipleChoiceSolutionIndices?: number[] | null;
@@ -372,6 +380,36 @@ export class Api<
     questionsSolutionList: (params: RequestParams = {}) =>
       this.request<Solution, any>({
         path: `/api/Questions/solution`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name QuestionsAnswerDistributionList
+     * @request GET:/api/Questions/answerDistribution
+     */
+    questionsAnswerDistributionList: (params: RequestParams = {}) =>
+      this.request<AnswerDistribution, any>({
+        path: `/api/Questions/answerDistribution`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name QuestionsScoreboardList
+     * @request GET:/api/Questions/scoreboard
+     */
+    questionsScoreboardList: (params: RequestParams = {}) =>
+      this.request<Scoreboard, any>({
+        path: `/api/Questions/scoreboard`,
         method: "GET",
         format: "json",
         ...params,
