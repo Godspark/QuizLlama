@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-import type {Question} from "./api/Types";
+import type {AnswerDistribution, Question, Scoreboard, Solution} from "./api/Types";
 import Lobby from "./views/Lobby";
 import QuestionDisplay from "./views/QuestionDisplay";
 import RoundResults from "./views/RoundResults";
+import Leaderboard from "./views/Leaderboard.tsx";
 // import Leaderboard from "./views/Leaderboard";
 
 const App: React.FC = () => {
@@ -16,8 +17,12 @@ const App: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [showLobby, setShowLobby] = useState(true);
   const [showQuestion, setShowQuestion] = useState(false);
+  const [correctAnswers, setCorrectAnswers] = useState<Solution | null>(null);
+  const [answerDistribution, setAnswerDistribution] = useState<AnswerDistribution | null>(null);
+  const [scoreboard, setScoreboard] = useState<Scoreboard | null>(null);
   // const [showRoundLeaderboard, setShowRoundLeaderboard] = useState(false);
   const [showRoundResults, setShowRoundResults] = useState(false);
+  const [showRoundLeaderboard, setShowRoundLeaderboard] = useState(false);
   
   useEffect(() => {
     const newConnection = new signalR.HubConnectionBuilder()
@@ -92,9 +97,13 @@ const App: React.FC = () => {
     if (!connection) {
       return;
     }
-    connection.on("RoundEnded", () => {      
+    connection.on("RoundEnded", (correctAnswers: Solution, answerDistribution: AnswerDistribution, scoreboard: Scoreboard) => {      
+      setCorrectAnswers(correctAnswers);
+      setAnswerDistribution(answerDistribution);
+      setScoreboard(scoreboard);
       setShowQuestion(false);
       setShowRoundResults(true);
+      setShowRoundLeaderboard(false); //remove
     });
   }, [connection]);
 
@@ -156,11 +165,11 @@ const App: React.FC = () => {
       return <QuestionDisplay question={currentQuestion} onEndRound={endRound} playersAnswered={playersAnsweredCounter} />;
   }
   if (showRoundResults) {
-      return <RoundResults onNextQuestion={nextQuestion} />;
+      return <RoundResults onNextQuestion={nextQuestion} correctAnswers={correctAnswers} answerDistribution={answerDistribution} />;
   }
-  // if (showRoundLeaderboard) {
-  //   return <Leaderboard />;
-  // }
+  if (showRoundLeaderboard) {
+    return <Leaderboard scoreboard={scoreboard} />;
+  }
   
 };
 export default App;
