@@ -70,6 +70,22 @@ public class Game
             Correctness = correctness,
             PointsAwarded = correctness == Correctness.Correct ? CurrentQuestion.MaxPoints : 0
         };
+
+        switch (CurrentQuestion.QuestionType)
+        {
+            case QuestionType.MultipleChoice:
+                answer.MultipleChoiceIndex = guess.MultipleChoiceIndex ?? -1;
+                break;
+            case QuestionType.TrueFalse:
+                answer.TrueFalse = guess.TrueFalse ?? false;
+                break;
+            case QuestionType.TypeAnswer:
+                answer.TypeAnswerText = guess.TypeAnswerText ?? string.Empty;
+                break;
+            default:
+                throw new InvalidOperationException("PlayerAnswered(): Unsupported question type.");
+        }
+        
         Answers.Add(answer);
         player.Score += answer.PointsAwarded;
         return Interlocked.Increment(ref _playersAnsweredCount);
