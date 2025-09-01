@@ -74,13 +74,13 @@ public class Game
         switch (CurrentQuestion.QuestionType)
         {
             case QuestionType.MultipleChoice:
-                answer.MultipleChoiceIndex = guess.MultipleChoiceIndex ?? -1;
+                answer.MultipleChoiceIndex = guess.MultipleChoiceIndex ?? null;
                 break;
             case QuestionType.TrueFalse:
-                answer.TrueFalse = guess.TrueFalse ?? false;
+                answer.TrueFalse = guess.TrueFalse ?? null;
                 break;
             case QuestionType.TypeAnswer:
-                answer.TypeAnswerText = guess.TypeAnswerText ?? string.Empty;
+                answer.TypeAnswerText = guess.TypeAnswerText ?? null;
                 break;
             default:
                 throw new InvalidOperationException("PlayerAnswered(): Unsupported question type.");
@@ -126,13 +126,13 @@ public class Game
         switch (CurrentQuestion.QuestionType)
         {
             case QuestionType.TrueFalse:
-                answerDistribution.TrueFalseDistribution.Add(true, Answers.Count(a => a.TrueFalse));
-                answerDistribution.TrueFalseDistribution.Add(false, Answers.Count(a => !a.TrueFalse));
+                answerDistribution.TrueFalseDistribution.Add(true, Answers.Count(a => a.TrueFalse.HasValue && a.TrueFalse.Value));
+                answerDistribution.TrueFalseDistribution.Add(false, Answers.Count(a => a.TrueFalse.HasValue && !a.TrueFalse.Value));
                 break;
             case QuestionType.TypeAnswer:
                 foreach (var answer in Answers)
                 {
-                    if (!answerDistribution.TypeAnswerDistribution.TryAdd(answer.TypeAnswerText, 1))
+                    if (!string.IsNullOrEmpty(answer.TypeAnswerText) && !answerDistribution.TypeAnswerDistribution.TryAdd(answer.TypeAnswerText, 1))
                     {
                         answerDistribution.TypeAnswerDistribution[answer.TypeAnswerText]++;
                     }
@@ -141,9 +141,9 @@ public class Game
             case QuestionType.MultipleChoice:
                 foreach (var answer in Answers)
                 {
-                    if (!answerDistribution.MultipleChoiceDistribution.TryAdd(answer.MultipleChoiceIndex, 1))
+                    if (answer.MultipleChoiceIndex.HasValue && !answerDistribution.MultipleChoiceDistribution.TryAdd(answer.MultipleChoiceIndex.Value, 1))
                     {
-                        answerDistribution.MultipleChoiceDistribution[answer.MultipleChoiceIndex]++;
+                        answerDistribution.MultipleChoiceDistribution[answer.MultipleChoiceIndex.Value]++;
                     }
                 }
                 break;

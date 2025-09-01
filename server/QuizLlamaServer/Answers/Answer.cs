@@ -13,7 +13,7 @@ public class Answer
     
     public int PointsAwarded { get; set; }
     
-    public int MultipleChoiceIndex { get; set; }
-    public bool TrueFalse { get; set; }
-    public string TypeAnswerText { get; set; } = string.Empty;
+    public int? MultipleChoiceIndex { get; set; }
+    public bool? TrueFalse { get; set; }
+    public string? TypeAnswerText { get; set; }
 }
