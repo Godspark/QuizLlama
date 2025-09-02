@@ -10,7 +10,7 @@ public class MultipleChoiceQuestion : Question
     public override Correctness CheckAnswer(Guess guess)
     {
         if (guess.MultipleChoiceIndex == null 
-            || guess.MultipleChoiceIndex < 1 
+            || guess.MultipleChoiceIndex < 0 
             || guess.MultipleChoiceIndex > Alternatives.Count)
         {
             return Correctness.NotAnswered;

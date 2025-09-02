@@ -21,9 +21,9 @@ public class Game
         set => _playersAnsweredCount = value;
     }
 
-    public List<Question> Questions { get; set; } = [];
+    public List<Question> Questions { get; init; } = [];
     
-    private List<Answer> Answers { get; set; } = [];
+    private List<Answer> Answers { get; } = [];
     
     public Question CurrentQuestion => Questions[_currentQuestionIndex];
 

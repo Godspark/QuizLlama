@@ -75,9 +75,11 @@ public class GameService
 
     public bool JoinGame(string gameId, string nickname, string connectionId)
     {
-        if (!_games.TryGetValue(gameId, out var game)) return false;
-        game.AddPlayer(nickname, connectionId);
-        return true;
+        if (!_games.TryGetValue(gameId, out var game))
+        {
+            return false;
+        }
+        return game.AddPlayer(nickname, connectionId);
     }
 
     private static string CreateRoomCode()
