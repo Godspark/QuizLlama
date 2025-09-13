@@ -130,18 +130,31 @@ public class Game
                 answerDistribution.TrueFalseDistribution.Add(false, Answers.Count(a => a.TrueFalse.HasValue && !a.TrueFalse.Value));
                 break;
             case QuestionType.TypeAnswer:
+                foreach (var correctAnswer in ((TypeAnswerQuestion)CurrentQuestion).CorrectAnswers)
+                {
+                    answerDistribution.TypeAnswerDistribution.Add(correctAnswer, 0);
+                }
                 foreach (var answer in Answers)
                 {
-                    if (!string.IsNullOrEmpty(answer.TypeAnswerText) && !answerDistribution.TypeAnswerDistribution.TryAdd(answer.TypeAnswerText, 1))
+                    if (string.IsNullOrEmpty(answer.TypeAnswerText))
+                    {
+                        continue;
+                    }
+                    var newAnswer = answerDistribution.TypeAnswerDistribution.TryAdd(answer.TypeAnswerText, 1);
+                    if (!newAnswer)
                     {
                         answerDistribution.TypeAnswerDistribution[answer.TypeAnswerText]++;
                     }
                 }
                 break;
             case QuestionType.MultipleChoice:
+                for (var index = 0; index < ((MultipleChoiceQuestion)CurrentQuestion).Alternatives.Count; index++)
+                {
+                    answerDistribution.MultipleChoiceDistribution.Add(index, 0);
+                }
                 foreach (var answer in Answers)
                 {
-                    if (answer.MultipleChoiceIndex.HasValue && !answerDistribution.MultipleChoiceDistribution.TryAdd(answer.MultipleChoiceIndex.Value, 1))
+                    if (answer.MultipleChoiceIndex.HasValue)
                     {
                         answerDistribution.MultipleChoiceDistribution[answer.MultipleChoiceIndex.Value]++;
                     }
